@@ -4,19 +4,19 @@ const parser = new Parser();
 const GOOGLE_NEWS_BASE = 'https://news.google.com/rss/search?q=';
 const CONFIG = {
     local: {
-        query: 'Sri+Lanka+Nurses+Health+Sector',
+        query: 'Sri+Lanka+Nurses+OR+Ministry+of+Health+Sri+Lanka+OR+Health+Sector+Sri+Lanka',
         lang: 'en-LK',
         region: 'LK',
         ceid: 'LK:en'
     },
     global: {
-        query: 'International+Nursing+Healthcare+Trends',
+        query: 'International+Nursing+OR+Healthcare+News+OR+Medical+Research+OR+WHO+News',
         lang: 'en-US',
         region: 'US',
         ceid: 'US:en'
     },
     migration: {
-        query: 'Nurse+Jobs+Migration+UK+Australia+Canada+from+Sri+Lanka',
+        query: 'Nurse+Jobs+Abroad+OR+Migration+UK+Australia+Canada+from+Sri+Lanka+OR+Foreign+Nursing+Vacancies',
         lang: 'en-US',
         region: 'US',
         ceid: 'US:en'
@@ -42,15 +42,25 @@ const getNews = async (req, res) => {
 
         const feed = await parser.parseURL(feedUrl);
 
-        // Transform feed items
-        const articles = feed.items.map(item => ({
-            title: item.title,
-            link: item.link,
-            pubDate: item.pubDate,
-            source: item.source || 'Google News',
-            contentSnippet: item.contentSnippet,
-            isoDate: item.isoDate
-        }));
+        // Calculate 7 days ago
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+        // Transform and Filter feed items for last 7 days
+        const articles = feed.items
+            .filter(item => {
+                const itemDate = new Date(item.isoDate || item.pubDate);
+                // Check if date is valid and recent
+                return !isNaN(itemDate) && itemDate >= oneWeekAgo;
+            })
+            .map(item => ({
+                title: item.title,
+                link: item.link,
+                pubDate: item.pubDate,
+                source: item.source || 'Google News',
+                contentSnippet: item.contentSnippet,
+                isoDate: item.isoDate
+            }));
 
         res.json({
             category,

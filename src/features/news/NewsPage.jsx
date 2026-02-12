@@ -40,7 +40,7 @@ const NewsPage = () => {
         <div className="space-y-8 animate-in fade-in duration-500">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-bold text-slate-900">Nursing News Hub</h1>
+                <h1 className="text-3xl font-bold text-slate-900">News</h1>
                 <p className="text-slate-500 mt-2">Latest updates, trends, and opportunities for nurses.</p>
             </div>
 
@@ -54,8 +54,8 @@ const NewsPage = () => {
                             key={cat.id}
                             onClick={() => setActiveTab(cat.id)}
                             className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${isActive
-                                    ? 'bg-primary text-white shadow-md'
-                                    : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+                                ? 'bg-primary text-white shadow-md'
+                                : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
                                 }`}
                         >
                             <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
