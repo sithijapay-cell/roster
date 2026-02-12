@@ -1,6 +1,6 @@
-import { startOfMonth, startOfWeek, addMonths, subDays } from 'date-fns';
+const { startOfMonth, startOfWeek, addMonths, subDays } = require('date-fns');
 
-export function getReportingPeriod(currentDate) {
+function getReportingPeriod(currentDate) {
     // Reporting Period Rule (Based on User Input):
     // Start Date: The Sunday of the week containing the 1st of the month.
     // End Date: The Saturday before the start of the NEXT month's period.
@@ -16,3 +16,5 @@ export function getReportingPeriod(currentDate) {
 
     return { startDate, endDate };
 }
+
+module.exports = { getReportingPeriod };

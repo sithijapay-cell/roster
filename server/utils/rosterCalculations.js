@@ -1,8 +1,8 @@
-import { format, addDays, getDay, parseISO, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
-import { getReportingPeriod } from './reportingPeriod';
+const { format, addDays, getDay, parseISO, startOfMonth, endOfMonth, eachDayOfInterval } = require('date-fns');
+const { getReportingPeriod } = require('./reportingPeriod');
 
 // Shift Time Mappings (Source of Truth)
-export const SHIFT_TIMES = {
+const SHIFT_TIMES = {
     M: { start: "7H", end: "13H" },
     E: { start: "13H", end: "19H" },
     DN: { start: "19H", end: "7H" },
@@ -19,7 +19,7 @@ export const SHIFT_TIMES = {
 };
 
 // Helper to parse "07:00H" or "19:00" strings to hours
-export function calculateHours(startStr, endStr) {
+function calculateHours(startStr, endStr) {
     if (!startStr || !endStr) return 0;
     if (startStr === "SD" || startStr === "CL" || startStr === "PH" || startStr === "DO" || startStr === "VL") return 0;
 
@@ -39,7 +39,7 @@ export function calculateHours(startStr, endStr) {
     return duration;
 }
 
-export const calculateRosterStats = (shifts, currentMonthDate) => {
+const calculateRosterStats = (shifts, currentMonthDate) => {
     const { startDate, endDate } = getReportingPeriod(currentMonthDate);
     const weeks = [];
 
@@ -187,4 +187,10 @@ export const calculateRosterStats = (shifts, currentMonthDate) => {
     }), { box1: 0, box2: 0, box3: 0, box4: 0 });
 
     return { weeks, monthlyStats, startDate, endDate };
+};
+
+module.exports = {
+    SHIFT_TIMES,
+    calculateHours,
+    calculateRosterStats
 };
