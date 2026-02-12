@@ -89,7 +89,14 @@ exports.getMe = async (req, res) => {
 // Google Login
 exports.googleLogin = async (req, res) => {
     const { idToken } = req.body;
-    const admin = require('../config/firebase');
+    const { admin, initialized, initError } = require('../config/firebase');
+
+    if (!initialized) {
+        return res.status(500).json({
+            message: 'Backend Configuration Error',
+            error: initError || 'Firebase Admin not initialized'
+        });
+    }
 
     try {
         // Verify Token with Firebase Admin
@@ -136,4 +143,15 @@ exports.googleLogin = async (req, res) => {
             code: err.code
         });
     }
+};
+
+// Debug Endpoint
+exports.debugFirebase = (req, res) => {
+    const { initialized, initError } = require('../config/firebase');
+    res.json({
+        status: initialized ? 'connected' : 'failed',
+        error: initError,
+        envVarPresent: !!process.env.FIREBASE_SERVICE_ACCOUNT,
+        envVarLength: process.env.FIREBASE_SERVICE_ACCOUNT ? process.env.FIREBASE_SERVICE_ACCOUNT.length : 0
+    });
 };
