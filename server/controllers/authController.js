@@ -129,6 +129,11 @@ exports.googleLogin = async (req, res) => {
 
     } catch (err) {
         console.error("Google Auth Error:", err);
-        res.status(401).json({ message: 'Invalid or expired Google Token' });
+        // RETURN THE ACTUAL ERROR MESSAGE FOR DEBUGGING
+        res.status(401).json({
+            message: 'Google Auth Failed',
+            error: err.message,
+            code: err.code
+        });
     }
 };
