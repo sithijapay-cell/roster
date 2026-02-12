@@ -68,7 +68,9 @@ export const loginWithGoogle = async () => {
 
     } catch (error) {
         console.error("Google Login failed", error);
-        return { success: false, error: error.message };
+        // Extract detailed error from backend if available
+        const serverError = error.response?.data?.error || error.response?.data?.message;
+        return { success: false, error: serverError || error.message };
     }
 };
 

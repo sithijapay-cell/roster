@@ -16,12 +16,22 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     }
 }
 
+let initialized = false;
+let initError = null;
+
 if (serviceAccount) {
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
-    });
+    try {
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount)
+        });
+        initialized = true;
+    } catch (e) {
+        initError = e.message;
+        console.error("Firebase Admin Init Error:", e);
+    }
 } else {
-    console.error("Firebase Admin NOT initialized. Google Login will fail.");
+    initError = "No service account provided (Env var or file missing/invalid)";
+    console.error(initError);
 }
 
-module.exports = admin;
+module.exports = { admin, initialized, initError };

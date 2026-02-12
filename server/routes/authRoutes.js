@@ -6,6 +6,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.post('/google', authController.googleLogin);
+router.get('/debug', authController.debugFirebase);
 router.get('/me', authMiddleware, authController.getMe);
 
 module.exports = router;
