@@ -19,6 +19,15 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const initAuth = async () => {
+            // 1. Check if returning from Google Redirect
+            const googleResult = await authService.checkGoogleRedirect();
+            if (googleResult.success) {
+                setUser(googleResult.user);
+                setLoading(false);
+                return;
+            }
+
+            // 2. Check Local Storage
             const token = localStorage.getItem('token');
             if (token) {
                 const userData = await authService.getCurrentUser();

@@ -53,11 +53,17 @@ export const StoreProvider = ({ children }) => {
                 // Fetch Profile and Shifts from API
                 const userData = await userService.fetchUserData();
 
-                // If backend is empty but we have local data, consider uploading
-                // Note: fetchUserData returns { profile: {}, shifts: {} }
-                if (Object.keys(userData.profile || {}).length === 0 && Object.keys(localProfile).length > 0) {
-                    console.log("Backend empty, uploading local data...");
+                // Logic to Sync Local Data to Cloud on First Login
+                // If Backend Shifts are empty BUT we have Local Shifts, upload them.
+                // (Previously only checked profile, which is created empty on signup, causing a false positive)
+                const cloudHasNoShifts = Object.keys(userData.shifts || {}).length === 0;
+                const localHasShifts = Object.keys(localShifts).length > 0;
+
+                if (cloudHasNoShifts && localHasShifts) {
+                    console.log("Backend shifts empty, syncing local data to cloud...");
                     await userService.uploadLocalData(user.id, localProfile, localShifts);
+
+                    // After upload, set state to local (which is now cloud-synced)
                     setCloudProfile(localProfile);
                     setCloudShifts(localShifts);
                 } else {

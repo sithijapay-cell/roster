@@ -92,7 +92,8 @@ export const generatePDF = async (profile, shifts, currentMonthDate) => {
         // 2. FILL LEAVE DATA
         const leaves = [];
         Object.entries(shifts).forEach(([dateStr, data]) => {
-            if (data.type && data.type !== 'Work') {
+            // Exclude Work, DO (Day Off), and SD (Sleeping Day) from the Leave Chart
+            if (data.type && !['Work', 'DO', 'SD'].includes(data.type)) {
                 leaves.push({ date: dateStr, type: data.type });
             }
         });
@@ -152,18 +153,10 @@ export const generatePDF = async (profile, shifts, currentMonthDate) => {
         fillField('grand_total_ot_calc', `${monthlyStats.box4}H`);
 
         const pdfBytes = await pdfDoc.save();
-
-        // Trigger download
-        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `Roster_${profile.name || 'Nurse'}_${format(currentMonthDate, 'MMM_yyyy')}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        return pdfBytes;
 
     } catch (error) {
         console.error("PDF Generation failed:", error);
-        alert("Failed to generate PDF. check console.");
+        throw error; // Re-throw to handle in UI
     }
 };

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Clock, FileText, Users, Shield, Globe } from 'lucide-react';
+import { ArrowRight, Clock, FileText, Users, Shield, Globe, Zap, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '../components/ui/Button';
@@ -11,17 +11,19 @@ const Home = () => {
     const { user, openAuthModal } = useStore();
 
     return (
-        <div className="text-foreground -mt-16 sm:mt-0">
+        <div className="text-foreground -mt-16 sm:mt-0 overflow-hidden">
             <Helmet>
-                <title>Sri Lankan Nurses Hub | Smart Tools for Healthcare Professionals</title>
+                <title>Sri Lankan Nurses Hub | Next-Gen Healthcare Tools</title>
                 <meta name="description" content="The ultimate platform for Sri Lankan Nursing Officers. Automated Roster Management, OT Calculation (Form 108), and Professional Resources." />
             </Helmet>
 
-            {/* Hero Section */}
-            <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 to-white dark:from-slate-900 dark:to-slate-950 pt-20">
-                <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-                    <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] mix-blend-multiply dark:mix-blend-screen opacity-50 animate-pulse" />
-                    <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-teal-400/20 rounded-full blur-[100px] mix-blend-multiply dark:mix-blend-screen opacity-50" />
+            {/* Premium Hero Section */}
+            <section className="relative min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 pt-20">
+                {/* Animated Background Blobs */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/30 rounded-full mix-blend-multiply filter blur-[120px] animate-blob" />
+                    <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-purple-400/30 rounded-full mix-blend-multiply filter blur-[120px] animate-blob animation-delay-2000" />
+                    <div className="absolute -bottom-32 left-1/3 w-[500px] h-[500px] bg-teal-400/30 rounded-full mix-blend-multiply filter blur-[120px] animate-blob animation-delay-4000" />
                 </div>
 
                 <div className="container px-4 md:px-6 relative z-10 text-center space-y-8">
@@ -30,13 +32,15 @@ const Home = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
                     >
-                        <span className="inline-block py-1 px-3 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold tracking-wide mb-6">
-                            TRUSTED BY HEALTHCARE PROFESSIONALS
-                        </span>
-                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight text-slate-900 dark:text-white mb-6">
-                            Empowering <br className="hidden md:block" />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-teal-500">
-                                Sri Lankan Nurses
+                        <div className="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-white/20 shadow-lg text-primary text-sm font-bold tracking-wide mb-8 animate-fade-in hover:scale-105 transition-transform duration-300 cursor-default">
+                            <Star className="w-4 h-4 fill-primary" />
+                            <span>#1 PLATFORM FOR SL NURSES</span>
+                        </div>
+
+                        <h1 className="text-6xl md:text-8xl font-black tracking-tight text-slate-900 dark:text-white mb-6 leading-tight">
+                            Elevate Your <br className="hidden md:block" />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 animate-pulse-glow">
+                                Nursing Career
                             </span>
                         </h1>
                     </motion.div>
@@ -45,69 +49,82 @@ const Home = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.2 }}
-                        className="text-lg md:text-2xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto font-light leading-relaxed"
+                        className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto font-medium leading-relaxed"
                     >
-                        The all-in-one platform for effortless roster planning, precise OT calculations, and continuous professional development.
+                        Experience the future of healthcare management.
+                        <span className="text-slate-900 dark:text-white font-semibold"> Intelligent Rosters</span>,
+                        <span className="text-slate-900 dark:text-white font-semibold"> Instant OT</span>, and
+                        <span className="text-slate-900 dark:text-white font-semibold"> Global Opportunities</span>.
                     </motion.p>
 
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
+                        initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.5, delay: 0.4 }}
-                        className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4"
+                        className="flex flex-col sm:flex-row gap-5 justify-center items-center pt-8"
                     >
                         {user ? (
                             <Link to="/roster">
-                                <Button size="lg" className="shadow-xl shadow-primary/25 text-lg h-14 px-8">
-                                    Go to Dashboard <ArrowRight className="ml-2 h-5 w-5" />
+                                <Button size="lg" className="h-16 px-10 text-xl rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-105 transition-all shadow-blue-500/25 shadow-2xl animate-float text-white border-0">
+                                    Launch Dashboard <Zap className="ml-2 h-6 w-6" />
                                 </Button>
                             </Link>
                         ) : (
                             <Button
                                 size="lg"
                                 onClick={() => openAuthModal('signup')}
-                                className="shadow-xl shadow-primary/25 text-lg h-14 px-8"
+                                className="h-16 px-10 text-xl rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-105 transition-all shadow-blue-500/25 shadow-2xl animate-float text-white border-0"
                             >
-                                Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
+                                Get Started Free <ArrowRight className="ml-2 h-6 w-6" />
                             </Button>
                         )}
                         <Link to="/news">
-                            <Button variant="outline" size="lg" className="h-14 px-8 text-lg border-2">
-                                Latest News
+                            <Button variant="outline" size="lg" className="h-16 px-10 text-xl rounded-2xl border-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                                Explore News
                             </Button>
                         </Link>
                     </motion.div>
                 </div>
             </section>
 
-            {/* Features Grid */}
-            <section className="py-24 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
+            {/* Bento Grid Features */}
+            <section className="py-32 bg-white dark:bg-slate-950 relative z-10">
                 <div className="container px-4 mx-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <FeatureCard
-                            icon={<Clock className="w-10 h-10 text-primary" />}
-                            title="Smart Roster"
-                            description="Intelligent calendar system that handles shifts, exchanges, and leave requests seamlessly."
+                    <div className="text-center mb-20">
+                        <h2 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 mb-6">
+                            Everything You Need to Excel
+                        </h2>
+                        <p className="text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+                            Powerful tools designed specifically for the unique needs of Sri Lankan nursing professionals.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
+                        <BentoCard
+                            colSpan="md:col-span-2"
+                            icon={<Clock className="w-12 h-12 text-blue-500" />}
+                            title="Smart Roster Engine"
+                            description="Automated shift management that handles complex exchanges and leave requests with zero conflicts."
+                            gradient="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20"
                         />
-                        <FeatureCard
-                            icon={<FileText className="w-10 h-10 text-teal-500" />}
-                            title="Instant OT Forms"
-                            description="Generate error-free Form 108 Overtime claims formatted for print in seconds."
+                        <BentoCard
+                            icon={<FileText className="w-12 h-12 text-teal-500" />}
+                            title="1-Click OT Forms"
+                            description="Generate print-ready Form 108 claims instantly. 100% calculation accuracy guaranteed."
+                            gradient="bg-gradient-to-br from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20"
                         />
-                        <FeatureCard
-                            icon={<Globe className="w-10 h-10 text-indigo-500" />}
-                            title="Global News"
-                            description="Stay ahead with real-time updates on local health directives and global nursing trends."
+                        <BentoCard
+                            icon={<Globe className="w-12 h-12 text-purple-500" />}
+                            title="Global Nexus"
+                            description="Real-time news aggregator tracking international nursing trends and migration opportunities."
+                            gradient="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20"
                         />
-                        <FeatureCard
-                            icon={<Shield className="w-10 h-10 text-emerald-500" />}
-                            title="Secure & Private"
-                            description="Your data is encrypted and synced securely. Privacy first, always."
-                        />
-                        <FeatureCard
-                            icon={<Users className="w-10 h-10 text-rose-500" />}
-                            title="Community"
-                            description="Join a growing network of nursing professionals sharing resources and opportunities."
+                        <BentoCard
+                            colSpan="md:col-span-2"
+                            icon={<Shield className="w-12 h-12 text-indigo-500" />}
+                            title="Military-Grade Privacy"
+                            description="Your roster data is encrypted and stored locally. We prioritize your privacy above everything else."
+                            gradient="bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-900/20 dark:to-violet-900/20"
                         />
                     </div>
                 </div>
@@ -116,16 +133,21 @@ const Home = () => {
     );
 };
 
-const FeatureCard = ({ icon, title, description }) => (
-    <Card className="group hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 border-none bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl">
-        <CardHeader>
-            <div className="mb-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 group-hover:scale-110 transition-transform duration-300 w-fit">
+const BentoCard = ({ colSpan = "", icon, title, description, gradient }) => (
+    <Card className={`group relative overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 ${colSpan} ${gradient}`}>
+        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-150 duration-700">
+            {React.cloneElement(icon, { className: "w-48 h-48" })}
+        </div>
+        <CardHeader className="relative z-10 pt-10 px-8">
+            <div className="mb-6 p-4 rounded-2xl bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl w-fit shadow-sm ring-1 ring-black/5">
                 {icon}
             </div>
-            <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">{title}</CardTitle>
+            <CardTitle className="text-3xl font-bold text-slate-900 dark:text-white mb-3">
+                {title}
+            </CardTitle>
         </CardHeader>
-        <CardContent>
-            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
+        <CardContent className="relative z-10 px-8 pb-10">
+            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 {description}
             </p>
         </CardContent>
@@ -133,5 +155,3 @@ const FeatureCard = ({ icon, title, description }) => (
 );
 
 export default Home;
-
-

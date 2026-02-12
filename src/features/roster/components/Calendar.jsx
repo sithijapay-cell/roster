@@ -58,19 +58,25 @@ const Calendar = () => {
             // Pass currentDate (Date object) as expected by pdfGenerator
             const pdfBytes = await generatePDF(profile, shifts, currentDate);
 
+            if (!pdfBytes) throw new Error("No data generated");
+
             // Create Blob and trigger download
             const blob = new Blob([pdfBytes], { type: 'application/pdf' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `OT_Form_${format(currentDate, 'yyyy_MM')}.pdf`;
+            // Use specific filename format
+            link.download = `Roster_${profile.name || 'Nurse'}_${format(currentDate, 'MMM_yyyy')}.pdf`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+
+            // Small timeout for mobile browsers before revoking
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+
         } catch (error) {
             console.error("Download failed", error);
-            alert("Failed to generate PDF. check console for details.");
+            alert("Failed to generate PDF. Please try again.");
         }
     };
 

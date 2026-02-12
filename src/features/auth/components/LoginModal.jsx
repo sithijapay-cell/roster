@@ -30,19 +30,13 @@ const LoginModal = ({ onClose, onSwitchToSignup }) => {
 
     const handleGoogleLogin = async () => {
         if (loading) return;
-        setLoading(true);
+        setLoading(true); // Persist loading state until redirect logic takes over (or unmounts)
         try {
-            const result = await loginWithGoogle();
-            if (result.success) {
-                onClose();
-                navigate('/roster');
-            } else {
-                setError(result.error);
-            }
+            await loginWithGoogle();
+            // No navigation here, the page will redirect
         } catch (error) {
             console.error("Google login error in modal:", error);
             setError(error.message || "Failed to sign in with Google");
-        } finally {
             setLoading(false);
         }
     };

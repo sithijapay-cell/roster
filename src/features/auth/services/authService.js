@@ -47,30 +47,42 @@ export const logout = async () => {
     return { success: true };
 };
 
-import { signInWithPopup } from "firebase/auth";
+import { signInWithRedirect, getRedirectResult } from "firebase/auth";
 import { auth, googleProvider } from "../../../lib/firebase";
 
-// Google Login
+// Google Login (Redirect Flow for Mobile Compatibility)
 export const loginWithGoogle = async () => {
     try {
-        // 1. Get ID Token from Firebase Client
-        const userCredential = await signInWithPopup(auth, googleProvider);
-        const idToken = await userCredential.user.getIdToken();
-
-        // 2. Send to Backend for Verification & JWT
-        const response = await api.post('/auth/google', { idToken });
-
-        if (response.data.token) {
-            localStorage.setItem('token', response.data.token);
-            return { success: true, user: response.data.user };
-        }
-        return { success: false, error: "No token received from backend" };
-
+        await signInWithRedirect(auth, googleProvider);
+        // The page will redirect, so no return value is needed here immediately.
+        return { success: true, pendingRedirect: true };
     } catch (error) {
-        console.error("Google Login failed", error);
-        // Extract detailed error from backend if available
-        const serverError = error.response?.data?.error || error.response?.data?.message;
-        return { success: false, error: serverError || error.message };
+        console.error("Google Login Redirect failed", error);
+        return { success: false, error: error.message };
+    }
+};
+
+// Check for Google Redirect Result (Call on App Mount)
+export const checkGoogleRedirect = async () => {
+    try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+            // User just returned from Google
+            const user = result.user;
+            const idToken = await user.getIdToken();
+
+            // Send to Backend
+            const response = await api.post('/auth/google', { idToken });
+
+            if (response.data.token) {
+                localStorage.setItem('token', response.data.token);
+                return { success: true, user: response.data.user };
+            }
+        }
+        return { success: false, noRedirect: true };
+    } catch (error) {
+        console.error("Google Redirect Result failed", error);
+        return { success: false, error: error.message };
     }
 };
 
