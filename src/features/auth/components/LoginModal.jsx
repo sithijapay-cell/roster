@@ -41,7 +41,7 @@ const LoginModal = ({ onClose, onSwitchToSignup }) => {
             }
         } catch (error) {
             console.error("Google login error in modal:", error);
-            setError("Failed to sign in with Google");
+            setError(error.message || "Failed to sign in with Google");
         } finally {
             setLoading(false);
         }

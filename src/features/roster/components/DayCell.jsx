@@ -13,29 +13,28 @@ const DayCell = ({ day, currentMonth, data, onClick }) => {
     const dayType = data?.type;
 
     return (
+
         <div
             onClick={() => onClick(day)}
             className={cn(
-                "min-h-[85px] md:min-h-[110px] bg-card border p-1 md:p-2 relative cursor-pointer hover:bg-accent/50 transition-colors flex flex-col gap-1 overflow-hidden",
-                !isCurrentMonth && "bg-muted/30 text-muted-foreground",
-                isTodayDate && "ring-2 ring-blue-500 ring-inset z-10",
-                dayType === 'DO' && "bg-emerald-50/50 dark:bg-emerald-950/10",
-                dayType === 'PH' && "bg-amber-50/50 dark:bg-amber-950/10"
+                "min-h-[100px] md:min-h-[120px] bg-white border-b border-r p-2 relative cursor-pointer hover:bg-slate-50 transition-all duration-200 flex flex-col gap-1 group",
+                !isCurrentMonth && "bg-slate-50/50 text-slate-400",
+                isTodayDate && "ring-2 ring-primary ring-inset z-10 shadow-md",
+                dayType === 'DO' && "bg-emerald-50/60",
+                dayType === 'PH' && "bg-amber-50/60"
             )}
         >
             <span className={cn(
-                "text-xs md:text-sm font-medium w-6 h-6 md:w-7 md:h-7 flex items-center justify-center rounded-full mb-1",
-                isTodayDate ? "bg-blue-600 text-white shadow-sm" : "text-slate-700"
+                "text-xs md:text-sm font-semibold w-7 h-7 flex items-center justify-center rounded-full transition-colors",
+                isTodayDate ? "bg-primary text-white shadow-sm" : "text-slate-500 group-hover:text-slate-900 group-hover:bg-slate-200/50"
             )}>
                 {format(day, 'd')}
             </span>
 
-
-
-            <div className="flex flex-wrap gap-1 content-start flex-1">
+            <div className="flex flex-wrap gap-1 content-start flex-1 mt-1">
                 {dayType && (
                     <Badge variant="secondary" className={cn(
-                        "text-[10px] px-1.5 py-0 rounded-md h-5 tracking-wide w-full justify-center md:w-auto",
+                        "text-[10px] px-1.5 h-5 w-full justify-center md:w-auto font-medium border-0",
                         DAY_TYPES[dayType]?.color
                     )}>
                         {dayType}
@@ -43,7 +42,7 @@ const DayCell = ({ day, currentMonth, data, onClick }) => {
                 )}
                 {shifts.map((shift, idx) => (
                     <Badge key={idx} variant="outline" className={cn(
-                        "text-[10px] px-1.5 py-0 rounded-md h-5 flex-1 justify-center min-w-[20px] bg-white dark:bg-slate-800",
+                        "text-[10px] px-1.5 h-5 flex-1 justify-center min-w-[24px] bg-white border shadow-sm font-semibold",
                         SHIFT_TYPES[shift]?.color
                     )}>
                         {shift}
@@ -52,6 +51,7 @@ const DayCell = ({ day, currentMonth, data, onClick }) => {
             </div>
         </div>
     );
+
 };
 
 export default DayCell;

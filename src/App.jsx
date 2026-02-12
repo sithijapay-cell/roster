@@ -2,9 +2,10 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { StoreProvider } from './context/StoreContext';
 import { ThemeProvider } from './context/ThemeContext';
-import RosterLayout from './layouts/RosterLayout';
+import DashboardLayout from './layouts/DashboardLayout';
 import MainLayout from './layouts/MainLayout';
 
+import DashboardHome from './features/dashboard/DashboardHome';
 import CalendarPage from './features/roster/pages/CalendarPage';
 import SummaryPage from './features/roster/pages/SummaryPage';
 import NursesPage from './features/nurses/pages/NursesPage';
@@ -33,14 +34,15 @@ function App() {
 
               {/* Roster Application Routes */}
               <Route path="/roster/*" element={
-                <RosterLayout>
+                <DashboardLayout>
                   <Routes>
-                    <Route path="/" element={<CalendarPage />} />
+                    <Route path="/" element={<DashboardHome />} />
+                    <Route path="/calendar" element={<CalendarPage />} />
                     <Route path="/summary" element={<SummaryPage />} />
                     <Route path="/nurses" element={<NursesPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
                   </Routes>
-                </RosterLayout>
+                </DashboardLayout>
               } />
             </Routes>
           </StoreProvider>

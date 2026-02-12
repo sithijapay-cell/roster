@@ -107,16 +107,16 @@ const Calendar = () => {
             </div>
 
             {/* Calendar Grid */}
-            <Card className="border-0 shadow-lg ring-1 ring-slate-200 overflow-hidden bg-white">
-                <div className="grid grid-cols-7 border-b bg-slate-50">
+            <Card className="border-0 shadow-xl shadow-slate-200/50 ring-1 ring-slate-200 overflow-hidden bg-white text-slate-800 rounded-xl">
+                <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50/80">
                     {weekDays.map(day => (
-                        <div key={day} className="py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">
+                        <div key={day} className="py-3 text-[11px] font-bold text-slate-400 uppercase tracking-widest text-center">
                             {day}
                         </div>
                     ))}
                 </div>
 
-                <div className="grid grid-cols-7 bg-slate-100 gap-px">
+                <div className="grid grid-cols-7 bg-slate-200 gap-px border-l border-t border-slate-200">
                     {calendarDays.map((day, idx) => {
                         const dateKey = format(day, 'yyyy-MM-dd');
                         let data = shifts[dateKey] ? { ...shifts[dateKey] } : { shifts: [], type: null };
