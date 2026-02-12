@@ -1,8 +1,8 @@
 import React from 'react';
-import WelcomeBanner from '../components/WelcomeBanner';
-import StatsOverview from '../components/StatsOverview';
-import QuickActions from '../components/QuickActions';
-import UpcomingShifts from '../components/UpcomingShifts';
+import WelcomeBanner from './components/WelcomeBanner';
+import StatsOverview from './components/StatsOverview';
+import QuickActions from './components/QuickActions';
+import UpcomingShifts from './components/UpcomingShifts';
 
 const DashboardHome = () => {
     return (

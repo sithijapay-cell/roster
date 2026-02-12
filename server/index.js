@@ -12,6 +12,7 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/roster', require('./routes/rosterRoutes'));
+app.use('/api/news', require('./routes/newsRoutes'));
 
 app.get('/', (req, res) => {
     res.send('Nurse Roster API is running');

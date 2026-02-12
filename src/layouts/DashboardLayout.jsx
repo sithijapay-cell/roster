@@ -24,7 +24,8 @@ const DashboardLayout = ({ children }) => {
 
     const navItems = [
         { to: '/roster', icon: LayoutDashboard, label: 'Dashboard', exact: true },
-        { to: '/roster/calendar', icon: Calendar, label: 'Roster' }, // Changed path for calendar
+        { to: '/roster/calendar', icon: Calendar, label: 'Roster' },
+        { to: '/roster/news', icon: Globe, label: 'News Feed' },
         { to: '/roster/summary', icon: FileText, label: 'Summary' },
         { to: '/roster/profile', icon: User, label: 'Profile' },
     ];

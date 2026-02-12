@@ -13,7 +13,7 @@ import ProfilePage from './features/nurses/pages/ProfilePage';
 import Home from './pages/Home';
 import About from './pages/About';
 import Tools from './pages/Tools';
-import News from './pages/News';
+import NewsPage from './features/news/NewsPage';
 import TheaterPage from './pages/TheaterPage';
 
 import { AuthProvider } from './features/auth/context/AuthContext';
@@ -29,7 +29,7 @@ function App() {
               <Route path="/" element={<MainLayout><Home /></MainLayout>} />
               <Route path="/about" element={<MainLayout><About /></MainLayout>} />
               <Route path="/tools" element={<MainLayout><Tools /></MainLayout>} />
-              <Route path="/news" element={<MainLayout><News /></MainLayout>} />
+              <Route path="/news" element={<MainLayout><NewsPage /></MainLayout>} />
               <Route path="/theater" element={<MainLayout><TheaterPage /></MainLayout>} />
 
               {/* Roster Application Routes */}
@@ -40,6 +40,7 @@ function App() {
                     <Route path="/calendar" element={<CalendarPage />} />
                     <Route path="/summary" element={<SummaryPage />} />
                     <Route path="/nurses" element={<NursesPage />} />
+                    <Route path="/news" element={<NewsPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
                   </Routes>
                 </DashboardLayout>
