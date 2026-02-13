@@ -116,7 +116,7 @@ const MainLayout = ({ children }) => {
 
             <footer className="relative z-10 bg-card border-t border-border py-12 mt-20">
                 <div className="container mx-auto px-6 text-center text-muted-foreground text-sm">
-                    <p>© {new Date().getFullYear()} Sri Lankan Nurses Hub. All rights reserved.</p>
+                    <p>© {new Date().getFullYear()} Sri Lankan Nurses Hub. All rights reserved. (v1.0.1 - {new Date().toLocaleTimeString()})</p>
                 </div>
             </footer>
 
