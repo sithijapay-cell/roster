@@ -18,7 +18,7 @@ const Home = () => {
             </Helmet>
 
             {/* Premium Hero Section */}
-            <section className="relative min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 pt-20">
+            <section className="relative min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 pt-20 overflow-hidden">
                 {/* Animated Background Blobs */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/30 rounded-full mix-blend-multiply filter blur-[120px] animate-blob" />
@@ -26,64 +26,99 @@ const Home = () => {
                     <div className="absolute -bottom-32 left-1/3 w-[500px] h-[500px] bg-teal-400/30 rounded-full mix-blend-multiply filter blur-[120px] animate-blob animation-delay-4000" />
                 </div>
 
-                <div className="container px-4 md:px-6 relative z-10 text-center space-y-8">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                    >
-                        <div className="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-white/20 shadow-lg text-primary text-sm font-bold tracking-wide mb-8 animate-fade-in hover:scale-105 transition-transform duration-300 cursor-default">
-                            <Star className="w-4 h-4 fill-primary" />
-                            <span>#1 PLATFORM FOR SL NURSES</span>
+                <div className="container px-4 md:px-6 relative z-10">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
+
+                        {/* Left Nurse Image */}
+                        <motion.div
+                            initial={{ opacity: 0, x: -50 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.8 }}
+                            className="hidden lg:block lg:col-span-3 xl:col-span-3 pl-3"
+                        >
+                            <img
+                                src="/8.png"
+                                alt="Nurse Character"
+                                className="w-full h-auto object-contain max-h-[85vh] drop-shadow-2xl"
+                            />
+                        </motion.div>
+
+                        {/* Center Content */}
+                        <div className="col-span-1 lg:col-span-6 xl:col-span-6 text-center space-y-8 pb-10 lg:pb-0">
+                            <motion.div
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.8, ease: "easeOut" }}
+                            >
+                                <div className="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-white/20 shadow-lg text-primary text-sm font-bold tracking-wide mb-8 animate-fade-in hover:scale-105 transition-transform duration-300 cursor-default">
+                                    <Star className="w-4 h-4 fill-primary" />
+                                    <span>#1 PLATFORM FOR SL NURSES</span>
+                                </div>
+
+                                <h1 className="text-6xl md:text-8xl font-black tracking-tight text-slate-900 dark:text-white mb-6 leading-tight">
+                                    Elevate Your <br className="hidden md:block" />
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 animate-pulse-glow">
+                                        Nursing Career
+                                    </span>
+                                </h1>
+                            </motion.div>
+
+                            <motion.p
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.8, delay: 0.2 }}
+                                className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto font-medium leading-relaxed"
+                            >
+                                Experience the future of healthcare management.
+                                <span className="text-slate-900 dark:text-white font-semibold"> Intelligent Rosters</span>,
+                                <span className="text-slate-900 dark:text-white font-semibold"> Instant OT</span>, and
+                                <span className="text-slate-900 dark:text-white font-semibold"> Global Opportunities</span>.
+                            </motion.p>
+
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.5, delay: 0.4 }}
+                                className="flex flex-col sm:flex-row gap-5 justify-center items-center pt-8"
+                            >
+                                {user ? (
+                                    <Link to="/roster">
+                                        <Button size="lg" className="h-16 px-10 text-xl rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-105 transition-all shadow-blue-500/25 shadow-2xl animate-float text-white border-0">
+                                            Launch Dashboard <Zap className="ml-2 h-6 w-6" />
+                                        </Button>
+                                    </Link>
+                                ) : (
+                                    <Button
+                                        size="lg"
+                                        onClick={() => openAuthModal('signup')}
+                                        className="h-16 px-10 text-xl rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-105 transition-all shadow-blue-500/25 shadow-2xl animate-float text-white border-0"
+                                    >
+                                        Get Started Free <ArrowRight className="ml-2 h-6 w-6" />
+                                    </Button>
+                                )}
+                                <Link to="/news">
+                                    <Button variant="outline" size="lg" className="h-16 px-10 text-xl rounded-2xl border-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                                        Explore News
+                                    </Button>
+                                </Link>
+                            </motion.div>
                         </div>
 
-                        <h1 className="text-6xl md:text-8xl font-black tracking-tight text-slate-900 dark:text-white mb-6 leading-tight">
-                            Elevate Your <br className="hidden md:block" />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 animate-pulse-glow">
-                                Nursing Career
-                            </span>
-                        </h1>
-                    </motion.div>
+                        {/* Right Nurse Image */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 50 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.8 }}
+                            className="hidden lg:block lg:col-span-3 xl:col-span-3 pr-3"
+                        >
+                            <img
+                                src="/9.png"
+                                alt="Nurse Character"
+                                className="w-full h-auto object-contain max-h-[85vh] drop-shadow-2xl"
+                            />
+                        </motion.div>
 
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 0.2 }}
-                        className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto font-medium leading-relaxed"
-                    >
-                        Experience the future of healthcare management.
-                        <span className="text-slate-900 dark:text-white font-semibold"> Intelligent Rosters</span>,
-                        <span className="text-slate-900 dark:text-white font-semibold"> Instant OT</span>, and
-                        <span className="text-slate-900 dark:text-white font-semibold"> Global Opportunities</span>.
-                    </motion.p>
-
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.5, delay: 0.4 }}
-                        className="flex flex-col sm:flex-row gap-5 justify-center items-center pt-8"
-                    >
-                        {user ? (
-                            <Link to="/roster">
-                                <Button size="lg" className="h-16 px-10 text-xl rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-105 transition-all shadow-blue-500/25 shadow-2xl animate-float text-white border-0">
-                                    Launch Dashboard <Zap className="ml-2 h-6 w-6" />
-                                </Button>
-                            </Link>
-                        ) : (
-                            <Button
-                                size="lg"
-                                onClick={() => openAuthModal('signup')}
-                                className="h-16 px-10 text-xl rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-105 transition-all shadow-blue-500/25 shadow-2xl animate-float text-white border-0"
-                            >
-                                Get Started Free <ArrowRight className="ml-2 h-6 w-6" />
-                            </Button>
-                        )}
-                        <Link to="/news">
-                            <Button variant="outline" size="lg" className="h-16 px-10 text-xl rounded-2xl border-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
-                                Explore News
-                            </Button>
-                        </Link>
-                    </motion.div>
+                    </div>
                 </div>
             </section>
 

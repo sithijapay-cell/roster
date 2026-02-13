@@ -79,7 +79,7 @@ const DashboardLayout = ({ children }) => {
                 <div className="h-full flex flex-col">
                     {/* Brand */}
                     <div className="h-24 flex items-center px-8">
-                        <div className="flex items-center gap-3">
+                        <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shadow-lg shadow-primary/30">
                                 <span className="text-white font-black text-xl">N</span>
                             </div>
@@ -87,7 +87,7 @@ const DashboardLayout = ({ children }) => {
                                 <h1 className="font-bold text-slate-900 dark:text-white leading-none text-lg">SL Nurses</h1>
                                 <span className="text-[10px] text-primary font-bold tracking-widest uppercase mt-1 block">ROSTER HUB</span>
                             </div>
-                        </div>
+                        </Link>
                         <Button
                             variant="ghost"
                             size="icon"

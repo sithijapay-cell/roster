@@ -43,12 +43,23 @@ export const getCurrentUser = async () => {
 
 // Logout
 export const logout = async () => {
-    localStorage.removeItem('token');
-    return { success: true };
+    try {
+        await auth.signOut();
+        localStorage.removeItem('token');
+        return { success: true };
+    } catch (error) {
+        console.error("Logout failed", error);
+        return { success: false, error: error.message };
+    }
 };
 
 import { signInWithRedirect, getRedirectResult } from "firebase/auth";
 import { auth, googleProvider } from "../../../lib/firebase";
+
+// Subscribe to Auth State Changes
+export const onAuthStateChange = (callback) => {
+    return auth.onAuthStateChanged(callback);
+};
 
 // Google Login (Redirect Flow for Mobile Compatibility)
 export const loginWithGoogle = async () => {
@@ -62,7 +73,21 @@ export const loginWithGoogle = async () => {
     }
 };
 
-// Check for Google Redirect Result (Call on App Mount)
+// Verify Google Token with Backend
+export const verifyGoogleToken = async (idToken) => {
+    try {
+        const response = await api.post('/auth/google', { idToken });
+        if (response.data.token) {
+            return { success: true, user: response.data.user, token: response.data.token };
+        }
+        return { success: false, error: "No token received from backend" };
+    } catch (error) {
+        console.error("Google Token Verification failed", error);
+        return { success: false, error: error.message };
+    }
+};
+
+// Check for Google Redirect Result - DEPRECATED (Kept for reference, logic moved to AuthContext)
 export const checkGoogleRedirect = async () => {
     try {
         const result = await getRedirectResult(auth);

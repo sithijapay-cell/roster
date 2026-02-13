@@ -6,6 +6,7 @@ import { Button } from '../components/ui/Button';
 import { useTheme } from '../context/ThemeContext';
 import { useStore } from '../context/StoreContext';
 import AuthModal from '../features/auth/components/AuthModal';
+import UserMenu from '../components/layout/UserMenu';
 
 const MainLayout = ({ children }) => {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -60,14 +61,7 @@ const MainLayout = ({ children }) => {
                             {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                         </button>
                         {user ? (
-                            <div className="flex items-center gap-3">
-                                <Link to="/roster">
-                                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-4 py-2">
-                                        <UserIcon className="w-4 h-4 mr-2" />
-                                        Roster
-                                    </Button>
-                                </Link>
-                            </div>
+                            <UserMenu />
                         ) : (
                             <div className="flex items-center gap-3">
                                 <Button
