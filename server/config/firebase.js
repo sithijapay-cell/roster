@@ -1,5 +1,8 @@
 const admin = require('firebase-admin');
 
+let initialized = false;
+let initError = null;
+
 // Try to get credentials from ENV first (Render), otherwise from file (Local)
 let serviceAccount;
 if (process.env.FIREBASE_SERVICE_ACCOUNT) {
