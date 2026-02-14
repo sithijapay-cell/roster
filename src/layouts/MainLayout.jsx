@@ -5,6 +5,7 @@ import { Menu, X, ShoppingBag, Info, Home, Newspaper, Moon, Sun, LogIn, User as 
 import { Button } from '../components/ui/Button';
 import { useTheme } from '../context/ThemeContext';
 import { useStore } from '../context/StoreContext';
+import { useAuth } from '../features/auth/context/AuthContext';
 import AuthModal from '../features/auth/components/AuthModal';
 import UserMenu from '../components/layout/UserMenu';
 
