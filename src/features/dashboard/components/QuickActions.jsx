@@ -24,7 +24,7 @@ const QuickActions = () => {
                 <ActionButton
                     to="/roster/calendar"
                     icon={Calendar}
-                    label="Edit Roster"
+                    label="View Calendar"
                     color="bg-blue-500"
                 />
                 <ActionButton
