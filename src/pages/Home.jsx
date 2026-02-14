@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Clock, FileText, Users, Shield, Globe, Zap, Star } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '../components/ui/Button';
 import { useStore } from '../context/StoreContext';
@@ -9,6 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 
 const Home = () => {
     const { user, openAuthModal } = useStore();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (user) {
+            navigate('/roster');
+        }
+    }, [user, navigate]);
 
     return (
         <div className="text-foreground -mt-16 sm:mt-0 overflow-hidden">
