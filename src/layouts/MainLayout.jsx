@@ -12,7 +12,8 @@ const MainLayout = ({ children }) => {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     const location = useLocation();
     const { isDark, toggleTheme } = useTheme();
-    const { user, isAuthModalOpen, closeAuthModal, openAuthModal, authModalView } = useStore();
+    const { user } = useAuth();
+    const { isAuthModalOpen, closeAuthModal, openAuthModal, authModalView } = useStore();
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
