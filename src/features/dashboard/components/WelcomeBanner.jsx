@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useStore } from '../../../context/StoreContext';
 import { format } from 'date-fns';
+import { Button } from '../../../components/ui/Button';
 
 const WelcomeBanner = () => {
     const { profile } = useStore();
@@ -32,9 +34,15 @@ const WelcomeBanner = () => {
                 <h1 className="text-3xl md:text-4xl font-bold mb-2">
                     {greeting}, {profile?.name ? profile.name.split(' ')[0] : 'Nurse'}!
                 </h1>
-                <p className="text-blue-100 text-lg opacity-90">
+                <p className="text-blue-100 text-lg opacity-90 mb-6">
                     Ready to manage your roster efficiently today?
                 </p>
+
+                <Link to="/roster/calendar">
+                    <Button className="bg-white text-blue-900 hover:bg-blue-50 border-none font-bold">
+                        Open Calendar
+                    </Button>
+                </Link>
             </div>
         </div>
     );
