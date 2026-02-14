@@ -74,8 +74,14 @@ exports.getMe = async (req, res) => {
 
 exports.debugFirebase = (req, res) => {
     const { initialized, initError } = require('../config/firebase');
+    const envVar = process.env.FIREBASE_SERVICE_ACCOUNT;
+
     res.json({
         status: initialized ? 'connected' : 'failed',
-        error: initError
+        error: initError,
+        envVarPresent: !!envVar,
+        envVarLength: envVar ? envVar.length : 0,
+        envVarFirstChar: envVar ? envVar.charAt(0) : 'N/A',
+        envVarLastChar: envVar ? envVar.charAt(envVar.length - 1) : 'N/A'
     });
 };

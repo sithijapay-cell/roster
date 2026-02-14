@@ -7,6 +7,7 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
         serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
     } catch (e) {
         console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT env var", e);
+        initError = `Env Var Parsing Failed: ${e.message}`;
     }
 } else {
     try {
@@ -15,9 +16,6 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
         console.warn("No serviceAccountKey.json found and no FIREBASE_SERVICE_ACCOUNT env var set.");
     }
 }
-
-let initialized = false;
-let initError = null;
 
 if (serviceAccount) {
     try {
@@ -30,7 +28,10 @@ if (serviceAccount) {
         console.error("Firebase Admin Init Error:", e);
     }
 } else {
-    initError = "No service account provided (Env var or file missing/invalid)";
+    // Only set default error if not already set by parsing error
+    if (!initError) {
+        initError = "No service account provided (Env var missing/empty or file missing)";
+    }
     console.error(initError);
 }
 
