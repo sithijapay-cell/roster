@@ -12,9 +12,7 @@ import NursesPage from './features/nurses/pages/NursesPage';
 import ProfilePage from './features/nurses/pages/ProfilePage';
 import Home from './pages/Home';
 import About from './pages/About';
-import Tools from './pages/Tools';
 import NewsPage from './features/news/NewsPage';
-import TheaterPage from './pages/TheaterPage';
 
 import { AuthProvider } from './features/auth/context/AuthContext';
 
@@ -28,9 +26,7 @@ function App() {
               {/* Main Website Routes */}
               <Route path="/" element={<MainLayout><Home /></MainLayout>} />
               <Route path="/about" element={<MainLayout><About /></MainLayout>} />
-              <Route path="/tools" element={<MainLayout><Tools /></MainLayout>} />
               <Route path="/news" element={<MainLayout><NewsPage /></MainLayout>} />
-              <Route path="/theater" element={<MainLayout><TheaterPage /></MainLayout>} />
 
               {/* Roster Application Routes */}
               <Route path="/roster/*" element={

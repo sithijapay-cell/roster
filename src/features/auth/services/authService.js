@@ -1,51 +1,51 @@
-import api from '../../../services/api';
+import api from '../../../services/api'; import { auth, googleProvider } from '../../../lib/firebase';
+import {
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signInWithRedirect,
+    signOut,
+    sendEmailVerification
+} from 'firebase/auth';
 
 // Login with Email & Password
 export const loginWithEmail = async (email, password) => {
     try {
-        const response = await api.post('/auth/login', { email, password });
-        if (response.data.token) {
-            localStorage.setItem('token', response.data.token);
-            return { success: true, user: response.data.user };
-        }
-        return { success: false, error: "No token received" };
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        // Sync with backend
+        await api.post('/auth/sync');
+        return { success: true, user: userCredential.user };
     } catch (error) {
         console.error("Login failed", error);
-        return { success: false, error: error.response?.data?.message || error.message };
+        return { success: false, error: error.message };
     }
 };
 
 // Register
-export const signupWithEmail = async (email, password) => {
+export const signupWithEmail = async (email, password, profileData) => {
     try {
-        const response = await api.post('/auth/register', { email, password });
-        if (response.data.token) {
-            localStorage.setItem('token', response.data.token);
-            return { success: true, user: response.data.user };
-        }
-        return { success: false, error: "No token received" };
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Sync with backend (creates user in postgres)
+        await api.post('/auth/sync');
+
+        // Update profile via API if needed (Sync creates empty profile or default)
+        // syncUser in backend creates a basic profile.
+        // We might want to send the profileData to the backend update endpoint immediately.
+        // But userService handles profile updates.
+        // For now, sync is enough to create the record.
+
+        return { success: true, user: user };
     } catch (error) {
         console.error("Signup failed", error);
-        return { success: false, error: error.response?.data?.message || error.message };
-    }
-};
-
-// Get Current User (Me)
-export const getCurrentUser = async () => {
-    try {
-        const response = await api.get('/auth/me');
-        return response.data;
-    } catch (error) {
-        console.error("Get current user failed", error);
-        return null;
+        return { success: false, error: error.message };
     }
 };
 
 // Logout
 export const logout = async () => {
     try {
-        await auth.signOut();
-        localStorage.removeItem('token');
+        await signOut(auth);
         return { success: true };
     } catch (error) {
         console.error("Logout failed", error);
@@ -53,19 +53,30 @@ export const logout = async () => {
     }
 };
 
-import { signInWithRedirect, getRedirectResult } from "firebase/auth";
-import { auth, googleProvider } from "../../../lib/firebase";
-
 // Subscribe to Auth State Changes
 export const onAuthStateChange = (callback) => {
-    return auth.onAuthStateChanged(callback);
+    return auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            // Optional: Ensure sync on every load/reload
+            // slightly expensive but guarantees consistency
+            try {
+                // We use the token in headers, so just hitting the endpoint works
+                // But we can't await inside this callback easily without blocking UI?
+                // It's a listener.
+                // Let's just fire and forget the sync
+                api.post('/auth/sync').catch(err => console.error("Auto-sync failed", err));
+            } catch (e) {
+                console.error("Sync error", e);
+            }
+        }
+        callback(user);
+    });
 };
 
-// Google Login (Redirect Flow for Mobile Compatibility)
+// Google Login (Redirect)
 export const loginWithGoogle = async () => {
     try {
         await signInWithRedirect(auth, googleProvider);
-        // The page will redirect, so no return value is needed here immediately.
         return { success: true, pendingRedirect: true };
     } catch (error) {
         console.error("Google Login Redirect failed", error);
@@ -73,50 +84,24 @@ export const loginWithGoogle = async () => {
     }
 };
 
-// Verify Google Token with Backend
-export const verifyGoogleToken = async (idToken) => {
+// Get Current User (Me) - Sync
+export const getCurrentUser = () => {
+    return auth.currentUser;
+};
+
+// Verification - Optional
+export const sendVerification = async () => {
     try {
-        const response = await api.post('/auth/google', { idToken });
-        if (response.data.token) {
-            return { success: true, user: response.data.user, token: response.data.token };
+        if (auth.currentUser) {
+            await sendEmailVerification(auth.currentUser);
         }
-        return { success: false, error: "No token received from backend" };
+        return { success: true };
     } catch (error) {
-        console.error("Google Token Verification failed", error);
+        console.error("Verification email failed", error);
         return { success: false, error: error.message };
     }
 };
 
-// Check for Google Redirect Result - DEPRECATED (Kept for reference, logic moved to AuthContext)
-export const checkGoogleRedirect = async () => {
-    try {
-        const result = await getRedirectResult(auth);
-        if (result) {
-            // User just returned from Google
-            const user = result.user;
-            const idToken = await user.getIdToken();
-
-            // Send to Backend
-            const response = await api.post('/auth/google', { idToken });
-
-            if (response.data.token) {
-                localStorage.setItem('token', response.data.token);
-                return { success: true, user: response.data.user };
-            }
-        }
-        return { success: false, noRedirect: true };
-    } catch (error) {
-        console.error("Google Redirect Result failed", error);
-        return { success: false, error: error.message };
-    }
-};
-
-// Placeholder for Reset Password (Disabled)
-export const resetPassword = async (email) => {
-    return { success: false, error: "Password reset is not yet implemented in the new backend." };
-};
-
-// Placeholder for Verification (Disabled)
-export const sendVerification = async (user) => {
-    return { success: true }; // No-op
-};
+// Legacy/Unused Placeholders to avoid breaking imports
+export const verifyGoogleToken = async () => ({ success: true }); // No-op
+export const checkGoogleRedirect = async () => ({ success: true }); // No-op

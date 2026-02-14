@@ -19,7 +19,6 @@ const MainLayout = ({ children }) => {
     const navItems = [
         { label: 'Home', path: '/', icon: Home },
         { label: 'About', path: '/about', icon: Info },
-        { label: 'Tools', path: '/tools', icon: ShoppingBag },
         { label: 'Tech News', path: '/news', icon: Newspaper },
     ];
 
@@ -106,6 +105,53 @@ const MainLayout = ({ children }) => {
                                 {item.label}
                             </Link>
                         ))}
+
+                        <div className="h-px bg-border my-2" />
+
+                        {user ? (
+                            <div className="space-y-4">
+                                <Link
+                                    to="/roster"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="flex items-center gap-3 text-lg font-medium text-foreground hover:text-primary transition-colors"
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                                        {user.email?.charAt(0).toUpperCase() || 'U'}
+                                    </div>
+                                    <span>My Dashboard</span>
+                                </Link>
+                                <Link
+                                    to="/roster/profile"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="flex items-center gap-3 text-lg font-medium text-muted-foreground hover:text-primary transition-colors"
+                                >
+                                    <UserIcon size={18} />
+                                    <span>My Profile</span>
+                                </Link>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-4 pt-2">
+                                <Button
+                                    onClick={() => {
+                                        openAuthModal('login');
+                                        setIsMenuOpen(false);
+                                    }}
+                                    variant="outline"
+                                    className="w-full justify-center"
+                                >
+                                    Log In
+                                </Button>
+                                <Button
+                                    onClick={() => {
+                                        openAuthModal('signup');
+                                        setIsMenuOpen(false);
+                                    }}
+                                    className="w-full justify-center bg-primary text-primary-foreground hover:bg-primary/90"
+                                >
+                                    Sign Up
+                                </Button>
+                            </div>
+                        )}
                     </motion.div>
                 )}
             </header>
@@ -116,7 +162,7 @@ const MainLayout = ({ children }) => {
 
             <footer className="relative z-10 bg-card border-t border-border py-12 mt-20">
                 <div className="container mx-auto px-6 text-center text-muted-foreground text-sm">
-                    <p>© {new Date().getFullYear()} Sri Lankan Nurses Hub. All rights reserved. (v1.0.1 - {new Date().toLocaleTimeString()})</p>
+                    <p>© {new Date().getFullYear()} Sri Lankan Nurses Hub. All rights reserved. (v1.0.3)</p>
                 </div>
             </footer>
 

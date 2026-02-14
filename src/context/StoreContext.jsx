@@ -61,7 +61,7 @@ export const StoreProvider = ({ children }) => {
 
                 if (cloudHasNoShifts && localHasShifts) {
                     console.log("Backend shifts empty, syncing local data to cloud...");
-                    await userService.uploadLocalData(user.id, localProfile, localShifts);
+                    await userService.uploadLocalData(user.uid, localProfile, localShifts);
 
                     // After upload, set state to local (which is now cloud-synced)
                     setCloudProfile(localProfile);
@@ -83,7 +83,7 @@ export const StoreProvider = ({ children }) => {
     const updateProfile = async (data) => {
         try {
             if (user) {
-                const updated = await userService.updateUserProfile(user.id, data);
+                const updated = await userService.updateUserProfile(user.uid, data);
                 setCloudProfile(prev => ({ ...prev, ...updated }));
             } else {
                 setLocalProfile(prev => ({ ...prev, ...data }));
@@ -97,7 +97,7 @@ export const StoreProvider = ({ children }) => {
     const addShift = async (date, shiftData) => {
         try {
             if (user) {
-                await userService.addShift(user.id, date, shiftData);
+                await userService.addShift(user.uid, date, shiftData);
                 setCloudShifts(prev => ({
                     ...prev,
                     [date]: shiftData
@@ -114,7 +114,7 @@ export const StoreProvider = ({ children }) => {
     const removeShift = async (date) => {
         try {
             if (user) {
-                await userService.removeShift(user.id, date);
+                await userService.removeShift(user.uid, date);
                 setCloudShifts(prev => {
                     const newShifts = { ...prev };
                     delete newShifts[date];

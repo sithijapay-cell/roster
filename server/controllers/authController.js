@@ -1,157 +1,81 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const { pool } = require('../config/db');
 
-// Register User
-exports.register = async (req, res) => {
-    const { email, password } = req.body;
+// Sync User (Ensure Firebase User exists in Postgres)
+exports.syncUser = async (req, res) => {
+    const { uid, email, picture } = req.user; // From authMiddleware (Firebase Token)
 
     try {
-        // Check if user exists
-        const userCheck = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-        if (userCheck.rows.length > 0) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
+        // Check if user exists by firebase_uid (we might need to add this column or map via email)
+        // For now, let's assume specific email mapping or we add a column.
+        // SINCE WE ARE MIGRATING: Let's use email as the lookup for now, but ideally we should store `firebase_uid`.
+        // Let's check if the 'users' table has a firebase_uid column. If not, we might fallback to email.
 
-        // Hash password
-        const salt = await bcrypt.genSalt(10);
-        const passwordHash = await bcrypt.hash(password, salt);
+        // Strategy: Look up by email.
+        let userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
-        // Insert User
-        const newUser = await pool.query(
-            'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email, role',
-            [email, passwordHash]
-        );
+        let userId;
 
-        // Create Nurse Profile (Empty initially)
-        await pool.query(
-            'INSERT INTO nurses (user_id, name) VALUES ($1, $2)',
-            [newUser.rows[0].id, email.split('@')[0]] // Default name from email
-        );
-
-        // Create Token
-        const token = jwt.sign(
-            { id: newUser.rows[0].id, role: newUser.rows[0].role },
-            process.env.JWT_SECRET,
-            { expiresIn: '1d' }
-        );
-
-        res.json({ token, user: newUser.rows[0] });
-
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
-};
-
-// Login User
-exports.login = async (req, res) => {
-    const { email, password } = req.body;
-
-    try {
-        const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-
-        if (user.rows.length === 0) {
-            return res.status(400).json({ message: 'Invalid Credentials' });
-        }
-
-        const isMatch = await bcrypt.compare(password, user.rows[0].password_hash);
-
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid Credentials' });
-        }
-
-        const token = jwt.sign(
-            { id: user.rows[0].id, role: user.rows[0].role },
-            process.env.JWT_SECRET,
-            { expiresIn: '1d' }
-        );
-
-        res.json({ token, user: { id: user.rows[0].id, email: user.rows[0].email, role: user.rows[0].role } });
-
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
-};
-
-// Get Current User
-exports.getMe = async (req, res) => {
-    try {
-        const user = await pool.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
-        res.json(user.rows[0]);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
-};
-
-// Google Login
-exports.googleLogin = async (req, res) => {
-    const { idToken } = req.body;
-    const { admin, initialized, initError } = require('../config/firebase');
-
-    if (!initialized) {
-        return res.status(500).json({
-            message: 'Backend Configuration Error',
-            error: initError || 'Firebase Admin not initialized'
-        });
-    }
-
-    try {
-        // Verify Token with Firebase Admin
-        const decodedToken = await admin.auth().verifyIdToken(idToken);
-        const { email, sub: googleUid } = decodedToken;
-
-        // Check if user exists
-        let user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-
-        if (user.rows.length === 0) {
-            // Create New User
-            // Note: We set a random password hash or a specific flag since they use Google
-            const dummyPassword = await bcrypt.hash(Math.random().toString(36), 10);
-
+        if (userResult.rows.length === 0) {
+            // Create new user in Postgres
             const newUser = await pool.query(
-                'INSERT INTO users (email, password_hash, role) VALUES ($1, $2, $3) RETURNING id, email, role',
-                [email, dummyPassword, 'nurse']
+                'INSERT INTO users (email, role) VALUES ($1, $2) RETURNING id',
+                [email, 'nurse']
             );
+            userId = newUser.rows[0].id;
 
             // Create Nurse Profile
             await pool.query(
                 'INSERT INTO nurses (user_id, name) VALUES ($1, $2)',
-                [newUser.rows[0].id, email.split('@')[0]]
+                [userId, email.split('@')[0]]
             );
-
-            user = { rows: [newUser.rows[0]] };
+        } else {
+            userId = userResult.rows[0].id;
         }
 
-        // Generate JWT
-        const token = jwt.sign(
-            { id: user.rows[0].id, role: user.rows[0].role },
-            process.env.JWT_SECRET,
-            { expiresIn: '1d' }
-        );
+        // Return the user profile data
+        const profileResult = await pool.query(`
+            SELECT u.id, u.email, u.role, n.name, n.designation, n.institution, n.ward 
+            FROM users u
+            LEFT JOIN nurses n ON u.id = n.user_id
+            WHERE u.id = $1
+        `, [userId]);
 
-        res.json({ token, user: user.rows[0] });
+        res.json(profileResult.rows[0]);
 
     } catch (err) {
-        console.error("Google Auth Error:", err);
-        // RETURN THE ACTUAL ERROR MESSAGE FOR DEBUGGING
-        res.status(401).json({
-            message: 'Google Auth Failed',
-            error: err.message,
-            code: err.code
-        });
+        console.error("Sync User Error:", err.message);
+        res.status(500).send('Server Error');
     }
 };
 
-// Debug Endpoint
+// Get Current User Profile
+exports.getMe = async (req, res) => {
+    try {
+        // req.user is the decoded Firebase token
+        const { email } = req.user;
+
+        const userResult = await pool.query(`
+            SELECT u.id, u.email, u.role, n.name, n.designation, n.institution, n.ward 
+            FROM users u
+            LEFT JOIN nurses n ON u.id = n.user_id
+            WHERE u.email = $1
+        `, [email]);
+
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found in database' });
+        }
+
+        res.json(userResult.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
 exports.debugFirebase = (req, res) => {
     const { initialized, initError } = require('../config/firebase');
     res.json({
         status: initialized ? 'connected' : 'failed',
-        error: initError,
-        envVarPresent: !!process.env.FIREBASE_SERVICE_ACCOUNT,
-        envVarLength: process.env.FIREBASE_SERVICE_ACCOUNT ? process.env.FIREBASE_SERVICE_ACCOUNT.length : 0
+        error: initError
     });
 };

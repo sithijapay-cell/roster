@@ -1,23 +1,39 @@
 import axios from 'axios';
+import { auth } from '../lib/firebase';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
-    timeout: 60000, // 60 seconds (for Render cold starts)
+    baseURL: API_URL,
     headers: {
-        'Content-Type': 'application/json'
-    }
+        'Content-Type': 'application/json',
+    },
 });
 
-// Add a request interceptor to inject the JWT token
-api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers['Authorization'] = `Bearer ${token}`;
+// Request Interceptor: Attach Firebase ID Token
+api.interceptors.request.use(async (config) => {
+    try {
+        const user = auth.currentUser;
+        if (user) {
+            const token = await user.getIdToken();
+            config.headers.Authorization = `Bearer ${token}`;
         }
-        return config;
-    },
+    } catch (error) {
+        console.error("Error attaching token:", error);
+    }
+    return config;
+}, (error) => {
+    return Promise.reject(error);
+});
+
+// Response Interceptor: Handle 401 (Auth Errors)
+api.interceptors.response.use(
+    (response) => response,
     (error) => {
+        if (error.response && error.response.status === 401) {
+            console.error("Unauthorized access - redirecting to login?");
+            // Optionally dispatch a logout action or event here
+        }
         return Promise.reject(error);
     }
 );

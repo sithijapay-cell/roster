@@ -36,16 +36,22 @@ const UpcomingShifts = () => {
                                 {format(date, 'EEE')}
                             </div>
                             <div className="p-4 flex flex-col items-center justify-center min-h-[80px]">
-                                {shift?.type ? (
+                                {shift?.shifts && shift.shifts.length > 0 ? (
                                     <>
-                                        <span className={`text-2xl font-black ${['M', 'E', 'DN'].includes(shift.type) ? 'text-slate-800' : 'text-slate-400'
-                                            }`}>
-                                            {shift.type}
-                                        </span>
-                                        {shift.type === 'M' && <span className="text-[10px] text-slate-400 mt-1">7am - 1pm</span>}
-                                        {shift.type === 'E' && <span className="text-[10px] text-slate-400 mt-1">1pm - 7pm</span>}
-                                        {shift.type === 'DN' && <span className="text-[10px] text-slate-400 mt-1">7pm - 7am</span>}
+                                        <div className="flex flex-wrap gap-1 justify-center">
+                                            {shift.shifts.map((code, idx) => (
+                                                <span key={idx} className={`text-2xl font-black ${['M', 'E', 'DN'].includes(code) ? 'text-slate-800' : 'text-slate-400'
+                                                    }`}>
+                                                    {code}
+                                                </span>
+                                            ))}
+                                        </div>
+                                        {shift.shifts.includes('M') && <span className="text-[10px] text-slate-400 mt-1">7am - 1pm</span>}
+                                        {shift.shifts.includes('E') && <span className="text-[10px] text-slate-400 mt-1">1pm - 7pm</span>}
+                                        {shift.shifts.includes('DN') && <span className="text-[10px] text-slate-400 mt-1">7pm - 7am</span>}
                                     </>
+                                ) : shift?.type ? (
+                                    <span className="text-xl font-bold text-slate-500">{shift.type}</span>
                                 ) : (
                                     <span className="text-sm text-slate-300 font-medium">Off</span>
                                 )}

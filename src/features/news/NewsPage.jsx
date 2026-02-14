@@ -1,10 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Globe, MapPin, Plane, Loader2 } from 'lucide-react';
-import { Button } from '../../components/ui/Button'; // Assuming you have a button component
-import NewsCard from './components/NewsCard';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+import { useState, useEffect } from 'react';
+import { fetchNews as getNews } from '../../services/newsService';
 
 const NewsPage = () => {
     const [activeTab, setActiveTab] = useState('local');
@@ -26,8 +21,8 @@ const NewsPage = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get(`${API_BASE_URL}/news?category=${category}`);
-            setNews(response.data.articles || []);
+            const articles = await getNews(category);
+            setNews(articles);
         } catch (err) {
             console.error(err);
             setError('Failed to load news. Please try again later.');
