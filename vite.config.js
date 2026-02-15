@@ -28,9 +28,9 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/__\//] // Ignore Firebase Auth URLs
       },
       manifest: {
-        name: 'DesignInk Roster',
-        short_name: 'Roster',
-        description: 'Sri Lankan Nurses Hub Roster App',
+        name: 'ShiftMaster',
+        short_name: 'ShiftMaster',
+        description: 'ShiftMaster - Smart Nursing Roster App',
         theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',

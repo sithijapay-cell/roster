@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchNews as getNews } from '../../services/newsService';
+import { fetchNews } from '../../services/newsService';
 import { MapPin, Globe, Plane, Loader2 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import NewsCard from './components/NewsCard';
@@ -24,7 +24,7 @@ const NewsPage = () => {
         setLoading(true);
         setError(null);
         try {
-            const articles = await getNews(category);
+            const articles = await fetchNews(category);
             setNews(articles);
         } catch (err) {
             console.error(err);

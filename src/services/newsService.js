@@ -28,6 +28,21 @@ const buildUrl = (type) => {
 };
 
 export const fetchNews = async (category = 'local') => {
+    // 1. Check Cache
+    const CACHE_KEY = `news_cache_${category}`;
+    const CACHE_TIME_KEY = `news_time_${category}`;
+    const cachedData = localStorage.getItem(CACHE_KEY);
+    const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
+
+    // 24 Hour Refresh Policy
+    if (cachedData && cachedTime) {
+        const age = Date.now() - parseInt(cachedTime, 10);
+        if (age < 24 * 60 * 60 * 1000) {
+            console.log(`Using cached news for ${category} (Age: ${Math.round(age / 1000 / 60)} mins)`);
+            return JSON.parse(cachedData);
+        }
+    }
+
     try {
         const feedUrl = buildUrl(category);
         const encodedUrl = encodeURIComponent(feedUrl);
@@ -35,18 +50,34 @@ export const fetchNews = async (category = 'local') => {
         const response = await axios.get(`${RSS2JSON_BASE}${encodedUrl}`);
 
         if (response.data && response.data.status === 'ok') {
-            return response.data.items.map(item => ({
+            const items = response.data.items || [];
+
+            // Filter keywords
+            const KEYWORDS = ['Nurse', 'Nursing', 'Health', 'Hospital', 'Visa', 'Migration', 'NHSL', 'Salary', 'Medical', 'Patient'];
+            const filtered = items.filter(item => {
+                const text = `${item.title} ${item.description}`.toLowerCase();
+                return KEYWORDS.some(k => text.includes(k.toLowerCase()));
+            }).map(item => ({
                 title: item.title,
                 link: item.link,
                 pubDate: item.pubDate,
-                source: item.author || "Google News",
-                contentSnippet: item.description?.replace(/<[^>]*>?/gm, "") || ""
+                source: item.author || response.data.feed?.title || "News",
+                contentSnippet: item.description?.replace(/<[^>]*>?/gm, "").substring(0, 150) + "..." || ""
             }));
+
+            // Save to Cache
+            if (filtered.length > 0) {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(filtered));
+                localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
+            }
+
+            return filtered;
         }
         return [];
     } catch (error) {
         console.error("Error fetching news:", error);
-        // Fallback or empty return so app doesn't crash
+        // Return cached data if fetch fails (offline mode)
+        if (cachedData) return JSON.parse(cachedData);
         return [];
     }
 };

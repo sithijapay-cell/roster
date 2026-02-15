@@ -51,7 +51,7 @@ const IosInstallPrompt = () => {
                                 <img src="/pwa-192x192.png" alt="App Icon" className="w-10 h-10 rounded-lg shadow-sm" />
                             </div>
                             <div className="flex-1">
-                                <h3 className="font-semibold text-sm mb-1">Install DesignInk Roster</h3>
+                                <h3 className="font-semibold text-sm mb-1">Install ShiftMaster</h3>
                                 <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
                                     Install this app on your iPhone for a better experience.
                                 </p>

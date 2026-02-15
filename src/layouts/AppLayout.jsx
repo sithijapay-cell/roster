@@ -33,7 +33,7 @@ const AppLayout = () => {
             <div className="flex-1 flex flex-col md:pl-64 h-full overflow-hidden">
                 {/* Header (Optional, for mobile title or actions) */}
                 <header className="sticky top-0 z-40 md:hidden flex h-14 items-center gap-4 bg-background px-4 lg:h-[60px] lg:px-6 shadow-sm">
-                    <span className="font-semibold text-lg">DesignInk Roster</span>
+                    <span className="font-semibold text-lg">ShiftMaster</span>
                 </header>
 
                 <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">

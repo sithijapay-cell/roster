@@ -19,7 +19,8 @@ const Sidebar = ({ className }) => {
     const navItems = [
         { to: '/roster', icon: LayoutDashboard, label: 'Dashboard' },
         { to: '/roster/calendar', icon: CalendarDays, label: 'Roster' },
-        { to: '/roster/ot', icon: FileText, label: 'OT Forms' },
+        { to: '/roster/calendar', icon: CalendarDays, label: 'Roster' },
+        // { to: '/roster/ot', icon: FileText, label: 'OT Forms' }, // Removed as per request
         { to: '/news', icon: Newspaper, label: 'News' },
         { to: '/roster/profile', icon: UserIcon, label: 'Profile' },
     ];
@@ -27,7 +28,7 @@ const Sidebar = ({ className }) => {
     return (
         <div className={cn("flex h-full w-64 flex-col border-r bg-card shadow-sm", className)}>
             <div className="flex h-16 items-center border-b px-6">
-                <span className="text-lg font-bold text-primary">SL Nurses Hub</span>
+                <span className="text-lg font-bold text-primary">ShiftMaster</span>
             </div>
 
             <div className="flex-1 overflow-y-auto py-4">

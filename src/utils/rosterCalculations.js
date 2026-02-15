@@ -148,9 +148,19 @@ export const calculateRosterStats = (shifts, currentMonthDate) => {
                     const times = SHIFT_TIMES[otShiftCode];
                     if (times) {
                         dayResult.otIn = times.start;
-                        dayResult.otOut = times.end;
+
+                        // Partial OT Logic: Check for custom end time
+                        let actualEnd = times.end;
+                        // Use shiftData.customEndTimes if available for this specific OT code
+                        if (shiftData.customEndTimes && shiftData.customEndTimes[otShiftCode]) {
+                            actualEnd = shiftData.customEndTimes[otShiftCode];
+                        }
+
+                        dayResult.otOut = actualEnd;
                         dayResult.reason = "Essential for duty";
-                        const dur = calculateHours(times.start, times.end);
+
+                        // Calculate duration with dynamic end time
+                        const dur = calculateHours(times.start, actualEnd);
                         if (dur > 0) {
                             dayResult.otHrs = `${dur}H`;
                             dayResult.rawOT += dur;

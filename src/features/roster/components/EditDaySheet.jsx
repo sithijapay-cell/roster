@@ -14,13 +14,17 @@ const EditDaySheet = ({ isOpen, onClose, date, currentData }) => {
     const [selectedType, setSelectedType] = useState(null);
     const [error, setError] = useState(null);
 
+    const [customEndTimes, setCustomEndTimes] = useState({});
+
     useEffect(() => {
         if (isOpen && currentData) {
             setSelectedShifts(currentData.shifts || []);
             setSelectedType(currentData.type || null);
+            setCustomEndTimes(currentData.customEndTimes || {});
         } else {
             setSelectedShifts([]);
             setSelectedType(null);
+            setCustomEndTimes({});
         }
         setError(null);
     }, [isOpen, currentData, date]);
@@ -57,6 +61,13 @@ const EditDaySheet = ({ isOpen, onClose, date, currentData }) => {
             newShifts.push(code);
         }
         setSelectedShifts(newShifts);
+
+        // Clean up custom times if shift removed
+        if (!newShifts.includes(code)) {
+            const newTimes = { ...customEndTimes };
+            delete newTimes[code];
+            setCustomEndTimes(newTimes);
+        }
     };
 
     const handleTypeToggle = (code) => {
@@ -78,7 +89,8 @@ const EditDaySheet = ({ isOpen, onClose, date, currentData }) => {
         } else {
             addShift(dateStr, {
                 shifts: selectedShifts,
-                type: selectedType
+                type: selectedType,
+                customEndTimes: customEndTimes // Save custom times
             });
         }
         onClose();
@@ -144,6 +156,64 @@ const EditDaySheet = ({ isOpen, onClose, date, currentData }) => {
                             ))}
                         </div>
                     </section>
+
+                    {/* Partial OT Section */}
+                    {(selectedShifts.includes('OTM') || selectedShifts.includes('OTE')) && (
+                        <section className="bg-muted/30 p-4 rounded-xl border border-dashed">
+                            <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3 block">Partial OT (Optional Off Time)</label>
+                            <div className="space-y-4">
+                                {selectedShifts.includes('OTM') && (
+                                    <div>
+                                        <div className="text-xs font-medium mb-2 flex items-center justify-between">
+                                            <span>Morning OT (Standard: 13H)</span>
+                                            {customEndTimes['OTM'] && <Badge variant="outline" className="text-[10px] h-5 bg-background">Ends: {customEndTimes['OTM']}</Badge>}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            {['10H', '11H', '12H', '13H'].map(time => (
+                                                <button
+                                                    key={time}
+                                                    onClick={() => setCustomEndTimes(prev => ({ ...prev, 'OTM': time === '13H' ? null : time }))}
+                                                    className={cn(
+                                                        "flex-1 h-9 rounded-md text-xs font-bold border transition-all",
+                                                        (customEndTimes['OTM'] === time || (!customEndTimes['OTM'] && time === '13H'))
+                                                            ? "bg-primary text-primary-foreground border-primary"
+                                                            : "bg-background hover:bg-muted"
+                                                    )}
+                                                >
+                                                    {time}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {selectedShifts.includes('OTE') && (
+                                    <div>
+                                        <div className="text-xs font-medium mb-2 flex items-center justify-between">
+                                            <span>Evening OT (Standard: 19H)</span>
+                                            {customEndTimes['OTE'] && <Badge variant="outline" className="text-[10px] h-5 bg-background">Ends: {customEndTimes['OTE']}</Badge>}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            {['16H', '17H', '18H', '19H'].map(time => (
+                                                <button
+                                                    key={time}
+                                                    onClick={() => setCustomEndTimes(prev => ({ ...prev, 'OTE': time === '19H' ? null : time }))}
+                                                    className={cn(
+                                                        "flex-1 h-9 rounded-md text-xs font-bold border transition-all",
+                                                        (customEndTimes['OTE'] === time || (!customEndTimes['OTE'] && time === '19H'))
+                                                            ? "bg-primary text-primary-foreground border-primary"
+                                                            : "bg-background hover:bg-muted"
+                                                    )}
+                                                >
+                                                    {time}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+                    )}
 
                     {/* Special Types */}
                     <section>
