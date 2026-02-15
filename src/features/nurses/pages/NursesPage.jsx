@@ -26,7 +26,7 @@ const NursesPage = () => {
         },
         {
             id: 3,
-            title: "Dengue Control Program - Special Duty Roster Instructions",
+            title: "Dengue Control Program - Sleeping Day Roster Instructions",
             date: "2025-01-15",
             source: "Epidemiology Unit",
             link: "#",
