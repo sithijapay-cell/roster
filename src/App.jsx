@@ -42,7 +42,8 @@ const App = () => {
                 </AuthGuard>
               }>
                 {/* Dashboard Root -> Summary View */}
-                <Route index element={<SummaryPage />} />
+                {/* Dashboard Root -> Redirect to Calendar */}{/* SummaryPage removed as per request */}
+                <Route index element={<Navigate to="calendar" replace />} />
 
                 <Route path="calendar" element={<CalendarPage />} />
                 <Route path="ot" element={<OTPage />} />

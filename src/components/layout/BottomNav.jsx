@@ -14,9 +14,9 @@ import Sidebar from './Sidebar'; // Reuse sidebar for mobile drawer if needed, b
 
 const BottomNav = ({ className }) => {
     const navItems = [
-        { to: '/roster', icon: LayoutDashboard, label: 'Home' },
+        // { to: '/roster', icon: LayoutDashboard, label: 'Home' }, // Removed as per request
         { to: '/roster/calendar', icon: CalendarDays, label: 'Roster' },
-        { to: '/roster/ot', icon: FileText, label: 'OT' },
+        // { to: '/roster/ot', icon: FileText, label: 'OT' }, // Removed as per request
         { to: '/roster/profile', icon: UserIcon, label: 'Profile' },
     ];
 
