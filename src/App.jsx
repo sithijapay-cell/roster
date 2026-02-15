@@ -6,6 +6,8 @@ import { AuthProvider, useAuth } from './features/auth/context/AuthContext';
 import { StoreProvider } from './context/StoreContext';
 import AppLayout from './layouts/AppLayout';
 import GlobalAuthModal from './features/auth/components/GlobalAuthModal';
+import IosInstallPrompt from './components/pwa/IosInstallPrompt';
+import { Toaster } from 'react-hot-toast';
 
 // Pages
 import Home from './pages/Home'; // Landing Page
@@ -61,6 +63,8 @@ const App = () => {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
             <GlobalAuthModal />
+            <IosInstallPrompt />
+            <Toaster position="bottom-center" />
           </StoreProvider>
         </AuthProvider>
       </ThemeProvider>

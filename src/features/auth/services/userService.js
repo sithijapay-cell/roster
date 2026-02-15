@@ -54,7 +54,6 @@ export const updateUserProfile = async (userId, profileData) => {
 export const addShift = async (userId, date, shiftData) => {
     try {
         const uid = userId || getUserId();
-        console.log(`Adding shift for user: ${uid}, Date: ${date}, API URL: ${import.meta.env.VITE_API_URL}`);
 
         // Use date as document ID for easy retrieval/deduplication
         const shiftRef = doc(db, "users", uid, "shifts", date);
