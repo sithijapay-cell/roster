@@ -11,17 +11,27 @@ const NewsCard = ({ article }) => {
 
     return (
         <Card className="h-full flex flex-col hover:-translate-y-1 transition-transform duration-300">
-            <CardContent className="p-5 flex-1">
-                <div className="flex justify-between items-start mb-3">
-                    <Badge variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100">
-                        {sourceName}
+            <div className="relative h-48 w-full overflow-hidden">
+                <img
+                    src={article.image}
+                    alt={article.title}
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                    onError={(e) => { e.target.src = 'https://source.unsplash.com/800x600/?hospital,nurse'; }}
+                />
+                <div className="absolute top-3 left-3 flex gap-2">
+                    <Badge className="bg-primary/90 text-white shadow-sm backdrop-blur-sm">
+                        {article.category}
                     </Badge>
-                    {article.isoDate && (
-                        <span className="text-xs text-slate-400 flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {format(new Date(article.isoDate), 'MMM d, yyyy')}
-                        </span>
-                    )}
+                </div>
+            </div>
+
+            <CardContent className="p-5 flex-1">
+                <div className="flex justify-between items-center mb-3 text-xs text-slate-500">
+                    <span className="font-medium text-primary uppercase tracking-wider">{sourceName}</span>
+                    <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {format(new Date(article.pubDate), 'MMM d, HH:mm')}
+                    </span>
                 </div>
 
                 <h3 className="text-lg font-bold text-slate-800 mb-2 leading-tight line-clamp-2">
