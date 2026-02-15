@@ -15,16 +15,19 @@ const EditDaySheet = ({ isOpen, onClose, date, currentData }) => {
     const [error, setError] = useState(null);
 
     const [customEndTimes, setCustomEndTimes] = useState({});
+    const [customStartTimes, setCustomStartTimes] = useState({}); // New Start Time State
 
     useEffect(() => {
         if (isOpen && currentData) {
             setSelectedShifts(currentData.shifts || []);
             setSelectedType(currentData.type || null);
             setCustomEndTimes(currentData.customEndTimes || {});
+            setCustomStartTimes(currentData.customStartTimes || {}); // Load saved start times
         } else {
             setSelectedShifts([]);
             setSelectedType(null);
             setCustomEndTimes({});
+            setCustomStartTimes({});
         }
         setError(null);
     }, [isOpen, currentData, date]);
@@ -64,9 +67,13 @@ const EditDaySheet = ({ isOpen, onClose, date, currentData }) => {
 
         // Clean up custom times if shift removed
         if (!newShifts.includes(code)) {
-            const newTimes = { ...customEndTimes };
-            delete newTimes[code];
-            setCustomEndTimes(newTimes);
+            const newEndTimes = { ...customEndTimes };
+            delete newEndTimes[code];
+            setCustomEndTimes(newEndTimes);
+
+            const newStartTimes = { ...customStartTimes };
+            delete newStartTimes[code];
+            setCustomStartTimes(newStartTimes);
         }
     };
 
@@ -90,7 +97,8 @@ const EditDaySheet = ({ isOpen, onClose, date, currentData }) => {
             addShift(dateStr, {
                 shifts: selectedShifts,
                 type: selectedType,
-                customEndTimes: customEndTimes // Save custom times
+                customEndTimes: customEndTimes, // Save custom end times
+                customStartTimes: customStartTimes // Save custom start times
             });
         }
         onClose();
@@ -160,54 +168,112 @@ const EditDaySheet = ({ isOpen, onClose, date, currentData }) => {
                     {/* Partial OT Section */}
                     {(selectedShifts.includes('OTM') || selectedShifts.includes('OTE')) && (
                         <section className="bg-muted/30 p-4 rounded-xl border border-dashed">
-                            <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3 block">Partial OT (Optional Off Time)</label>
-                            <div className="space-y-4">
+                            <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3 block">Flexible OT Hours</label>
+                            <div className="space-y-6">
                                 {selectedShifts.includes('OTM') && (
-                                    <div>
-                                        <div className="text-xs font-medium mb-2 flex items-center justify-between">
-                                            <span>Morning OT (Standard: 13H)</span>
-                                            {customEndTimes['OTM'] && <Badge variant="outline" className="text-[10px] h-5 bg-background">Ends: {customEndTimes['OTM']}</Badge>}
+                                    <div className="space-y-3">
+                                        <div className="text-xs font-semibold uppercase text-primary border-b pb-1">Morning OT (Standard: 07H - 13H)</div>
+
+                                        {/* OTM Start */}
+                                        <div>
+                                            <div className="text-[10px] font-medium mb-1.5 flex justify-between">
+                                                <span>Start Time</span>
+                                                <Badge variant="outline" className="h-5 bg-background font-mono">{customStartTimes['OTM'] || '07H'}</Badge>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {['07H', '08H', '09H', '10H'].map(time => (
+                                                    <button
+                                                        key={time}
+                                                        onClick={() => setCustomStartTimes(prev => ({ ...prev, 'OTM': time === '07H' ? null : time }))}
+                                                        className={cn(
+                                                            "flex-1 h-8 rounded-md text-[10px] font-bold border transition-all",
+                                                            (customStartTimes['OTM'] === time || (!customStartTimes['OTM'] && time === '07H'))
+                                                                ? "bg-indigo-100 text-indigo-700 border-indigo-200"
+                                                                : "bg-background hover:bg-muted"
+                                                        )}
+                                                    >
+                                                        {time}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
-                                        <div className="flex gap-2">
-                                            {['10H', '11H', '12H', '13H'].map(time => (
-                                                <button
-                                                    key={time}
-                                                    onClick={() => setCustomEndTimes(prev => ({ ...prev, 'OTM': time === '13H' ? null : time }))}
-                                                    className={cn(
-                                                        "flex-1 h-9 rounded-md text-xs font-bold border transition-all",
-                                                        (customEndTimes['OTM'] === time || (!customEndTimes['OTM'] && time === '13H'))
-                                                            ? "bg-primary text-primary-foreground border-primary"
-                                                            : "bg-background hover:bg-muted"
-                                                    )}
-                                                >
-                                                    {time}
-                                                </button>
-                                            ))}
+
+                                        {/* OTM End */}
+                                        <div>
+                                            <div className="text-[10px] font-medium mb-1.5 flex justify-between">
+                                                <span>End Time</span>
+                                                <Badge variant="outline" className="h-5 bg-background font-mono">{customEndTimes['OTM'] || '13H'}</Badge>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {['10H', '11H', '12H', '13H'].map(time => (
+                                                    <button
+                                                        key={time}
+                                                        onClick={() => setCustomEndTimes(prev => ({ ...prev, 'OTM': time === '13H' ? null : time }))}
+                                                        className={cn(
+                                                            "flex-1 h-8 rounded-md text-[10px] font-bold border transition-all",
+                                                            (customEndTimes['OTM'] === time || (!customEndTimes['OTM'] && time === '13H'))
+                                                                ? "bg-emerald-100 text-emerald-700 border-emerald-200"
+                                                                : "bg-background hover:bg-muted"
+                                                        )}
+                                                    >
+                                                        {time}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
                                 )}
 
                                 {selectedShifts.includes('OTE') && (
-                                    <div>
-                                        <div className="text-xs font-medium mb-2 flex items-center justify-between">
-                                            <span>Evening OT (Standard: 19H)</span>
-                                            {customEndTimes['OTE'] && <Badge variant="outline" className="text-[10px] h-5 bg-background">Ends: {customEndTimes['OTE']}</Badge>}
+                                    <div className="space-y-3">
+                                        <div className="text-xs font-semibold uppercase text-primary border-b pb-1">Evening OT (Standard: 13H - 19H)</div>
+
+                                        {/* OTE Start */}
+                                        <div>
+                                            <div className="text-[10px] font-medium mb-1.5 flex justify-between">
+                                                <span>Start Time</span>
+                                                <Badge variant="outline" className="h-5 bg-background font-mono">{customStartTimes['OTE'] || '13H'}</Badge>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {['13H', '14H', '15H', '16H'].map(time => (
+                                                    <button
+                                                        key={time}
+                                                        onClick={() => setCustomStartTimes(prev => ({ ...prev, 'OTE': time === '13H' ? null : time }))}
+                                                        className={cn(
+                                                            "flex-1 h-8 rounded-md text-[10px] font-bold border transition-all",
+                                                            (customStartTimes['OTE'] === time || (!customStartTimes['OTE'] && time === '13H'))
+                                                                ? "bg-indigo-100 text-indigo-700 border-indigo-200"
+                                                                : "bg-background hover:bg-muted"
+                                                        )}
+                                                    >
+                                                        {time}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
-                                        <div className="flex gap-2">
-                                            {['16H', '17H', '18H', '19H'].map(time => (
-                                                <button
-                                                    key={time}
-                                                    onClick={() => setCustomEndTimes(prev => ({ ...prev, 'OTE': time === '19H' ? null : time }))}
-                                                    className={cn(
-                                                        "flex-1 h-9 rounded-md text-xs font-bold border transition-all",
-                                                        (customEndTimes['OTE'] === time || (!customEndTimes['OTE'] && time === '19H'))
-                                                            ? "bg-primary text-primary-foreground border-primary"
-                                                            : "bg-background hover:bg-muted"
-                                                    )}
-                                                >
-                                                    {time}
-                                                </button>
-                                            ))}
+
+                                        {/* OTE End */}
+                                        <div>
+                                            <div className="text-[10px] font-medium mb-1.5 flex justify-between">
+                                                <span>End Time</span>
+                                                <Badge variant="outline" className="h-5 bg-background font-mono">{customEndTimes['OTE'] || '19H'}</Badge>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {['16H', '17H', '18H', '19H'].map(time => (
+                                                    <button
+                                                        key={time}
+                                                        onClick={() => setCustomEndTimes(prev => ({ ...prev, 'OTE': time === '19H' ? null : time }))}
+                                                        className={cn(
+                                                            "flex-1 h-8 rounded-md text-[10px] font-bold border transition-all",
+                                                            (customEndTimes['OTE'] === time || (!customEndTimes['OTE'] && time === '19H'))
+                                                                ? "bg-emerald-100 text-emerald-700 border-emerald-200"
+                                                                : "bg-background hover:bg-muted"
+                                                        )}
+                                                    >
+                                                        {time}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
                                 )}
