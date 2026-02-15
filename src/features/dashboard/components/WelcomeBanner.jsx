@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useStore } from '../../../context/StoreContext';
 import { format } from 'date-fns';
 import { Button } from '../../../components/ui/Button';
+import { Card, CardContent } from '../../../components/ui/Card';
 
 const WelcomeBanner = () => {
     const { profile } = useStore();
@@ -16,35 +17,29 @@ const WelcomeBanner = () => {
     }, []);
 
     return (
-        <div className="relative rounded-2xl overflow-hidden shadow-lg bg-blue-900 text-white min-h-[180px] flex items-center mb-8">
-            {/* Background Image / Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-900/90 to-blue-600/40 z-10" />
-            <img
-                src="/dashboard_banner_medical.png"
-                alt="Medical Banner"
-                className="absolute inset-0 w-full h-full object-cover"
-                onError={(e) => { e.target.style.display = 'none' }} // Fallback if image missing
-            />
+        <Card className="relative overflow-hidden border-0 shadow-lg bg-medical-900 text-white min-h-[180px] mb-8 group">
+            {/* Background Gradient/Image */}
+            <div className="absolute inset-0 bg-gradient-to-r from-medical-900 via-medical-800 to-medical-600/40 z-10" />
+            <div className="absolute inset-0 bg-gradient-to-r from-medical-900 via-medical-800 to-medical-600/40 z-10" />
 
-            {/* Content */}
-            <div className="relative z-20 px-8 py-6 max-w-2xl">
-                <span className="inline-block px-3 py-1 rounded-full bg-white/10 text-xs font-medium backdrop-blur-sm mb-4 border border-white/20">
+            <CardContent className="relative z-20 flex flex-col justify-center h-full py-8 md:px-8">
+                <span className="inline-flex items-center w-fit px-3 py-1 rounded-full bg-white/10 text-xs font-medium backdrop-blur-md mb-4 border border-white/20 shadow-sm">
                     {format(new Date(), 'EEEE, dd MMMM yyyy')}
                 </span>
-                <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                    {greeting}, {profile?.name ? profile.name.split(' ')[0] : 'Nurse'}!
+                <h1 className="text-3xl md:text-5xl font-bold mb-2 tracking-tight text-white/95">
+                    {greeting}, <span className="text-medical-teal">{profile?.name ? profile.name.split(' ')[0] : 'Nurse'}</span>!
                 </h1>
-                <p className="text-blue-100 text-lg opacity-90 mb-6">
-                    Ready to manage your roster efficiently today?
+                <p className="text-blue-100 text-lg opacity-90 mb-6 max-w-lg font-light">
+                    Your next shift matters. Stay organized and ready.
                 </p>
 
                 <Link to="/roster/calendar">
-                    <Button className="bg-white text-blue-900 hover:bg-blue-50 border-none font-bold">
+                    <Button variant="secondary" className="bg-white text-medical-900 hover:bg-white/90 font-bold shadow-lg shadow-black/10 transition-transform active:scale-95">
                         Open Calendar
                     </Button>
                 </Link>
-            </div>
-        </div>
+            </CardContent>
+        </Card>
     );
 };
 

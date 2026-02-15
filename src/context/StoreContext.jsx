@@ -107,7 +107,7 @@ export const StoreProvider = ({ children }) => {
             }
         } catch (err) {
             console.error("Add shift failed", err);
-            alert("Failed to save shift. Check connection.");
+            alert(`Failed to save shift. Error: ${err.message || err}. Check connection.`);
         }
     };
 
@@ -129,7 +129,7 @@ export const StoreProvider = ({ children }) => {
             }
         } catch (err) {
             console.error("Remove shift failed", err);
-            alert("Failed to delete shift. Check connection.");
+            alert(`Failed to delete shift. Error: ${err.message || err}. Check connection.`);
         }
     };
 

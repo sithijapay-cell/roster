@@ -6,11 +6,15 @@ import ErrorBoundary from './components/ErrorBoundary'
 import './index.css'
 import App from './App.jsx'
 
+import { BrowserRouter } from 'react-router-dom'
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
       <HelmetProvider>
-        <App />
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
       </HelmetProvider>
     </ErrorBoundary>
   </StrictMode>,

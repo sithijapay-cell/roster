@@ -14,7 +14,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import DayCell from './DayCell';
-import EditDaySheet from './EditDayModal';
+import EditDaySheet from './EditDaySheet';
 import { useStore } from '../../../context/StoreContext';
 import { generatePDF } from '../../../services/pdfService';
 import { getReportingPeriod } from '../../../utils/reportingPeriod';

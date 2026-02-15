@@ -1,7 +1,4 @@
-import axios from 'axios';
-
-// Public CORS Proxy to bypass CORS restriction when fetching RSS/News
-const PROXY_URL = 'https://api.allorigins.win/get?url=';
+const RSS2JSON_BASE = 'https://api.rss2json.com/v1/api.json?rss_url=';
 const GOOGLE_NEWS_BASE = 'https://news.google.com/rss/search?q=';
 
 const CONFIG = {
@@ -34,27 +31,22 @@ export const fetchNews = async (category = 'local') => {
     try {
         const feedUrl = buildUrl(category);
         const encodedUrl = encodeURIComponent(feedUrl);
-        const response = await axios.get(`${PROXY_URL}${encodedUrl}`);
+        // Using rss2json for more reliable parsing and CORS handling
+        const response = await axios.get(`${RSS2JSON_BASE}${encodedUrl}`);
 
-        if (response.data && response.data.contents) {
-            // Parse XML content
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(response.data.contents, "text/xml");
-            const items = xmlDoc.querySelectorAll("item");
-
-            const articles = Array.from(items).map(item => ({
-                title: item.querySelector("title")?.textContent || "",
-                link: item.querySelector("link")?.textContent || "",
-                pubDate: item.querySelector("pubDate")?.textContent || "",
-                source: item.querySelector("source")?.textContent || "Google News",
-                contentSnippet: item.querySelector("description")?.textContent?.replace(/<[^>]*>?/gm, "") || "" // Strip HTML
+        if (response.data && response.data.status === 'ok') {
+            return response.data.items.map(item => ({
+                title: item.title,
+                link: item.link,
+                pubDate: item.pubDate,
+                source: item.author || "Google News",
+                contentSnippet: item.description?.replace(/<[^>]*>?/gm, "") || ""
             }));
-
-            return articles;
         }
         return [];
     } catch (error) {
         console.error("Error fetching news:", error);
-        throw error;
+        // Fallback or empty return so app doesn't crash
+        return [];
     }
 };

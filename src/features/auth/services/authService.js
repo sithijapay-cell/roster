@@ -1,18 +1,20 @@
-import api from '../../../services/api'; import { auth, googleProvider } from '../../../lib/firebase';
+import { auth, googleProvider, db } from '../../../lib/firebase';
 import {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
-    signInWithRedirect,
+    signInWithPopup,
     signOut,
-    sendEmailVerification
+    sendEmailVerification,
+    updateProfile,
 } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // Login with Email & Password
 export const loginWithEmail = async (email, password) => {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        // Sync with backend
-        await api.post('/auth/sync');
         return { success: true, user: userCredential.user };
     } catch (error) {
         console.error("Login failed", error);
@@ -26,14 +28,18 @@ export const signupWithEmail = async (email, password, profileData) => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // Sync with backend (creates user in postgres)
-        await api.post('/auth/sync');
+        // Update Auth Profile (Display Name) for emails
+        if (profileData?.name) {
+            await updateProfile(user, { displayName: profileData.name });
+        }
 
-        // Update profile via API if needed (Sync creates empty profile or default)
-        // syncUser in backend creates a basic profile.
-        // We might want to send the profileData to the backend update endpoint immediately.
-        // But userService handles profile updates.
-        // For now, sync is enough to create the record.
+        // Create Profile in Firestore
+        await setDoc(doc(db, "users", user.uid), {
+            email: email,
+            uid: user.uid,
+            createdAt: new Date().toISOString(),
+            ...profileData
+        });
 
         return { success: true, user: user };
     } catch (error) {
@@ -55,33 +61,44 @@ export const logout = async () => {
 
 // Subscribe to Auth State Changes
 export const onAuthStateChange = (callback) => {
-    return auth.onAuthStateChanged(async (user) => {
-        if (user) {
-            // Optional: Ensure sync on every load/reload
-            // slightly expensive but guarantees consistency
-            try {
-                // We use the token in headers, so just hitting the endpoint works
-                // But we can't await inside this callback easily without blocking UI?
-                // It's a listener.
-                // Let's just fire and forget the sync
-                api.post('/auth/sync').catch(err => console.error("Auto-sync failed", err));
-            } catch (e) {
-                console.error("Sync error", e);
-            }
-        }
+    return auth.onAuthStateChanged((user) => {
         callback(user);
     });
 };
 
 // Google Login (Redirect)
+// Google Login (Popup)
 export const loginWithGoogle = async () => {
     try {
-        await signInWithRedirect(auth, googleProvider);
-        return { success: true, pendingRedirect: true };
+        const result = await signInWithPopup(auth, googleProvider);
+        const user = result.user;
+
+        // Check if profile exists
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (!userSnap.exists()) {
+            // Create new profile for Google User
+            await setDoc(userRef, {
+                email: user.email,
+                uid: user.uid,
+                name: user.displayName || 'Nurse',
+                photoURL: user.photoURL,
+                createdAt: new Date().toISOString(),
+                role: 'nurse' // data model default
+            });
+        }
+
+        return { success: true, user };
     } catch (error) {
-        console.error("Google Login Redirect failed", error);
+        console.error("Google Login Popup failed", error);
         return { success: false, error: error.message };
     }
+};
+
+// Handle Redirect Result - No longer needed for Popup, keeping as no-op to avoid breaking imports
+export const handleGoogleRedirect = async () => {
+    return { success: true, noResult: true };
 };
 
 // Get Current User (Me) - Sync
@@ -98,6 +115,29 @@ export const sendVerification = async () => {
         return { success: true };
     } catch (error) {
         console.error("Verification email failed", error);
+        return { success: false, error: error.message };
+    }
+};
+
+// Sync User with Backend
+export const syncUserWithBackend = async (user) => {
+    try {
+        const token = await user.getIdToken();
+        const response = await fetch(`${API_URL}/auth/sync`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to sync user with backend');
+        }
+
+        return { success: true, data: await response.json() };
+    } catch (error) {
+        console.error("Sync with backend failed", error);
         return { success: false, error: error.message };
     }
 };

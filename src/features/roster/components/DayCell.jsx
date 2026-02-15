@@ -17,11 +17,11 @@ const DayCell = ({ day, currentMonth, data, onClick }) => {
         <div
             onClick={() => onClick(day)}
             className={cn(
-                "min-h-[100px] md:min-h-[120px] bg-white border-b border-r p-2 relative cursor-pointer hover:bg-slate-50 transition-all duration-200 flex flex-col gap-1 group",
-                !isCurrentMonth && "bg-slate-50/50 text-slate-400",
+                "min-h-[70px] md:min-h-[120px] bg-background border-b border-r p-1 md:p-2 relative cursor-pointer hover:bg-muted/50 transition-all duration-200 flex flex-col gap-1 group",
+                !isCurrentMonth && "bg-muted/20 text-muted-foreground",
                 isTodayDate && "ring-2 ring-primary ring-inset z-10 shadow-md",
-                dayType === 'DO' && "bg-emerald-50/60",
-                dayType === 'PH' && "bg-amber-50/60"
+                dayType === 'DO' && "bg-emerald-50/50 dark:bg-emerald-950/20",
+                dayType === 'PH' && "bg-amber-50/50 dark:bg-amber-950/20"
             )}
         >
             <span className={cn(

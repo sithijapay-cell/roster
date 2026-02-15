@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { fetchNews as getNews } from '../../services/newsService';
+import { MapPin, Globe, Plane, Loader2 } from 'lucide-react';
+import { Button } from '../../components/ui/Button';
+import NewsCard from './components/NewsCard';
 
 const NewsPage = () => {
     const [activeTab, setActiveTab] = useState('local');
