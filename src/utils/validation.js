@@ -55,21 +55,26 @@ export const validateShiftAddition = (dateStr, shiftCode, currentShifts, allShif
     // }
 
     // Fatigue Rule: prevent two OT Nights consecutively.
-    if (shiftCode === 'OTN') {
-        // Check previous day
-        const prevDate = subDays(parseISO(dateStr), 1).toISOString().split('T')[0];
-        const prevData = allShifts[prevDate];
-        if (prevData && prevData.shifts && prevData.shifts.includes('OTN')) {
-            return { valid: false, message: "Fatigue Rule: Cannot work OT Night for two consecutive days." };
-        }
-        // Check next day (if editing past)? Usually validation happens on entry.
-        // If next day already has OTN, this addition might be invalid too.
-        const nextDate = addDays(parseISO(dateStr), 1).toISOString().split('T')[0];
-        const nextData = allShifts[nextDate];
-        if (nextData && nextData.shifts && nextData.shifts.includes('OTN')) {
-            return { valid: false, message: "Fatigue Rule: Cannot work OT Night for two consecutive days." };
-        }
-    }
+    // Fatigue Rule: prevent two OT Nights consecutively.
+    // User Request: "change logics to can do OT N in SD day"
+    // The user explicitly wants to schedule OTN even if it violates strict consecutive checks.
+    // We are disabling this fatigue rule to allow maximum flexibility as requested.
+
+    // if (shiftCode === 'OTN') {
+    //     // Check previous day
+    //     const prevDate = subDays(parseISO(dateStr), 1).toISOString().split('T')[0];
+    //     const prevData = allShifts[prevDate];
+    //     if (prevData && prevData.shifts && prevData.shifts.includes('OTN')) {
+    //         return { valid: false, message: "Fatigue Rule: Cannot work OT Night for two consecutive days." };
+    //     }
+    //     // Check next day (if editing past)? Usually validation happens on entry.
+    //     // If next day already has OTN, this addition might be invalid too.
+    //     const nextDate = addDays(parseISO(dateStr), 1).toISOString().split('T')[0];
+    //     const nextData = allShifts[nextDate];
+    //     if (nextData && nextData.shifts && nextData.shifts.includes('OTN')) {
+    //         return { valid: false, message: "Fatigue Rule: Cannot work OT Night for two consecutive days." };
+    //     }
+    // }
 
     return { valid: true };
 };
