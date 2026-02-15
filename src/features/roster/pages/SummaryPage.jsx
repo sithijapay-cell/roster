@@ -7,9 +7,7 @@ import { calculateRosterStats } from '../../../utils/rosterCalculations';
 import { generatePDF } from '../../../services/pdfService';
 import { Button } from '../../../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../../../components/ui/Card';
-import { Download, ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
-import { connectCalendar, syncShiftToCalendar } from '../services/calendarService';
-import { toast } from 'react-hot-toast'; // Assuming you have toast, if not I'll use alert
+import { Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '../../../components/ui/Table';
 
 const SummaryPage = () => {
@@ -34,44 +32,6 @@ const SummaryPage = () => {
 
     const handleDownload = () => {
         generatePDF(profile, shifts, viewDate);
-    };
-
-    const handleSyncCalendar = async () => {
-        const confirmSync = window.confirm("Sync this month's shifts to Google Calendar?");
-        if (!confirmSync) return;
-
-        // 1. Connect/Auth
-        const authResult = await connectCalendar();
-        if (!authResult.success) {
-            alert("Failed to connect to Google Calendar: " + authResult.error);
-            return;
-        }
-
-        // 2. Filter shifts for current view month
-        const currentMonthStr = format(viewDate, 'yyyy-MM');
-        const shiftsToSync = Object.entries(shifts).filter(([date, shift]) =>
-            date.startsWith(currentMonthStr) && shift.shiftType !== 'Off'
-        );
-
-        if (shiftsToSync.length === 0) {
-            alert("No shifts found to sync for this month.");
-            return;
-        }
-
-        // 3. Sync Loop
-        let successCount = 0;
-        let failCount = 0;
-
-        // Show loading state (simple for now)
-        const toastId = "Syncing..."; // Placeholder for toast if available
-
-        for (const [date, shift] of shiftsToSync) {
-            const res = await syncShiftToCalendar(shift, date);
-            if (res.success) successCount++;
-            else failCount++;
-        }
-
-        alert(`Sync Complete!\nSuccessfully synced: ${successCount}\nFailed: ${failCount}`);
     };
 
     const isProfileComplete = profile && profile.name;
@@ -151,16 +111,10 @@ const SummaryPage = () => {
                     <div className="text-sm text-muted-foreground">
                         {!isProfileComplete && "Complete profile to enable download."}
                     </div>
-                    <div className="flex gap-2">
-                        <Button variant="outline" onClick={handleSyncCalendar} className="gap-2">
-                            <CalendarIcon className="h-4 w-4" />
-                            Sync to Calendar
-                        </Button>
-                        <Button onClick={handleDownload} disabled={!isProfileComplete} className="gap-2">
-                            <Download className="h-4 w-4" />
-                            Download Form 108
-                        </Button>
-                    </div>
+                    <Button onClick={handleDownload} disabled={!isProfileComplete} className="gap-2">
+                        <Download className="h-4 w-4" />
+                        Download Form 108
+                    </Button>
                 </CardFooter>
             </Card>
         </div>
