@@ -14,15 +14,15 @@ import Sidebar from './Sidebar'; // Reuse sidebar for mobile drawer if needed, b
 
 const BottomNav = ({ className }) => {
     const navItems = [
-        // { to: '/roster', icon: LayoutDashboard, label: 'Home' }, // Removed as per request
+
         { to: '/roster/calendar', icon: CalendarDays, label: 'Roster' },
-        // { to: '/roster/ot', icon: FileText, label: 'OT' }, // Removed as per request
+
         { to: '/roster/profile', icon: UserIcon, label: 'Profile' },
     ];
 
     return (
         <div className={cn("fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60", className)}>
-            <nav className="grid h-16 grid-cols-5 items-center justify-items-center">
+            <nav className="grid h-16 grid-cols-3 items-center justify-items-center">
                 {navItems.map((item) => (
                     <NavLink
                         key={item.to}

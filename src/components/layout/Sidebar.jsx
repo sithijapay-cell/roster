@@ -17,10 +17,10 @@ const Sidebar = ({ className }) => {
     const { logout } = useAuth();
 
     const navItems = [
-        // { to: '/roster', icon: LayoutDashboard, label: 'Dashboard' }, // Removed as per request
+
         { to: '/roster/calendar', icon: CalendarDays, label: 'Roster' },
 
-        // { to: '/roster/ot', icon: FileText, label: 'OT Forms' }, // Removed as per request
+
         { to: '/news', icon: Newspaper, label: 'News' },
         { to: '/roster/profile', icon: UserIcon, label: 'Profile' },
     ];
