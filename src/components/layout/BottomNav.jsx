@@ -6,7 +6,8 @@ import {
     FileText,
     User as UserIcon,
     LayoutDashboard,
-    Menu
+    Menu,
+    Calculator
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/Sheet';
 import { Button } from '../ui/Button';
@@ -16,7 +17,7 @@ const BottomNav = ({ className }) => {
     const navItems = [
 
         { to: '/roster/calendar', icon: CalendarDays, label: 'Roster' },
-
+        { to: '/tools', icon: Calculator, label: 'Tools' },
         { to: '/roster/profile', icon: UserIcon, label: 'Profile' },
     ];
 

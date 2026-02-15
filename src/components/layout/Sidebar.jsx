@@ -10,7 +10,8 @@ import {
     LogOut,
     LayoutDashboard,
     Newspaper,
-    Settings
+    Settings,
+    Calculator
 } from 'lucide-react';
 
 const Sidebar = ({ className }) => {
@@ -19,9 +20,8 @@ const Sidebar = ({ className }) => {
     const navItems = [
 
         { to: '/roster/calendar', icon: CalendarDays, label: 'Roster' },
-
-
         { to: '/news', icon: Newspaper, label: 'News' },
+        { to: '/tools', icon: Calculator, label: 'Tools' },
         { to: '/roster/profile', icon: UserIcon, label: 'Profile' },
     ];
 

@@ -20,6 +20,7 @@ import CalendarPage from './features/roster/pages/CalendarPage';
 import ProfilePage from './features/nurses/pages/ProfilePage';
 import NewsPage from './features/news/NewsPage';
 import OTPage from './features/ot/pages/OTPage';
+import CalculatorsPage from './features/tools/CalculatorsPage';
 
 import AuthGuard from './components/layout/AuthGuard';
 
@@ -48,6 +49,7 @@ const App = () => {
                 <Route path="calendar" element={<CalendarPage />} />
                 <Route path="ot" element={<OTPage />} />
                 <Route path="profile" element={<ProfilePage />} />
+                <Route path="tools" element={<CalculatorsPage />} />
               </Route>
 
               {/* News might be public or protected, sidebar has it. Let's make it available in AppLayout */}
