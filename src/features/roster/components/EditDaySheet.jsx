@@ -116,7 +116,7 @@ const EditDaySheet = ({ isOpen, onClose, date, currentData }) => {
                     </SheetDescription>
                 </SheetHeader>
 
-                <div className="space-y-8 pb-20">
+                <div className="space-y-8 pb-40">
                     {error && (
                         <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-lg font-medium border border-destructive/20 flex items-center gap-2">
                             <X className="w-4 h-4" /> {error}
