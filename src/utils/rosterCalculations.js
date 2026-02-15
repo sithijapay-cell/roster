@@ -44,11 +44,12 @@ export const calculateRosterStats = (shifts, currentMonthDate) => {
     const weeks = [];
 
     // Logic to track Sleeping Day (SD) logic requires lookback
+    // SD is only after Duty Night (DN). OT Night (OTN) does not trigger SD entitlement.
     let prevDayWasNight = false;
     // Check day before start
     const dayBeforeStart = addDays(startDate, -1);
     const prevKey = format(dayBeforeStart, 'yyyy-MM-dd');
-    if (shifts[prevKey]?.shifts?.some(s => ['DN', 'OTN'].includes(s))) {
+    if (shifts[prevKey]?.shifts?.includes('DN')) {
         prevDayWasNight = true;
     }
 
@@ -83,7 +84,7 @@ export const calculateRosterStats = (shifts, currentMonthDate) => {
 
             // Determine if today is Sleeping Day (SD)
             const isSleepingDay = prevDayWasNight;
-            const currentDayIsNight = shiftData.shifts && shiftData.shifts.some(s => ['DN', 'OTN'].includes(s));
+            const currentDayIsNight = shiftData.shifts && shiftData.shifts.includes('DN');
             dayResult.isSD = isSleepingDay;
 
             let activeShifts = [...(shiftData.shifts || [])];
@@ -97,8 +98,28 @@ export const calculateRosterStats = (shifts, currentMonthDate) => {
                     return s;
                 });
 
-                // If pure SD (no shifts), label it
-                if (activeShifts.length === 0 && !['CL', 'VL', 'PH', 'DO'].includes(shiftData.type)) {
+                // If it's an SD, we want to label it 'SD' in Duty In column if there is no regular duty.
+                // Even if there is OT (e.g. OTN), the Duty column should say SD.
+                const hasDutyShift = activeShifts.some(s => ['M', 'E', 'DN'].includes(s)); // Note M/E/DN already mapped to OT variants above if simply isSleepingDay? 
+                // Wait, if moved to OTM/OTE/OTN, they are no longer M/E/DN in activeShifts array.
+                // But the MAPPING happens above.
+                // If I had 'M', it became 'OTM'. 
+                // So if activeShifts has OTM, it WAS a duty shift.
+                // BUT, if the user explicitly wants "SD" displayed?
+                // If I work OTM (converted from M), do I show "SD" or "07:00"?
+                // Standard roster practice: If I work, I show Time.
+                // If I DON'T work Duty, I show SD.
+                // The issue: "only thing to be added is SD name only".
+                // If I work OTN on SD. activeShifts = ['OTN'].
+                // Original code: if (length === 0 ...). length is 1. So 'SD' not shown.
+                // Fix: Show 'SD' if NOT mapped from Duty?
+                // OTN is pure OT. It wasn't mapped from DN (DN -> OTN yes, but user entered OTN directly).
+                // Let's check original shifts?
+
+                const originalShifts = shiftData.shifts || [];
+                const hasOriginalDuty = originalShifts.some(s => ['M', 'E', 'DN'].includes(s));
+
+                if (!hasOriginalDuty && !['CL', 'VL', 'PH', 'DO'].includes(shiftData.type)) {
                     dayResult.dutyIn = 'SD';
                 }
             }
