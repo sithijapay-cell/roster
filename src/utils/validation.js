@@ -14,6 +14,7 @@ export const DAY_TYPES = {
     DO: { label: "Day Off", code: "DO", color: "bg-green-100 text-green-800 border-green-200" },
     PH: { label: "Public Holiday", code: "PH", color: "bg-red-100 text-red-800 border-red-200" },
     CL: { label: "Casual Leave", code: "CL", color: "bg-gray-100 text-gray-800 border-gray-200" },
+    VL: { label: "Vacation Leave", code: "VL", color: "bg-pink-100 text-pink-800 border-pink-200" },
     SD: { label: "Sleeping Day", code: "SD", color: "bg-indigo-50 text-indigo-700 border-indigo-200" }, // Auto set after DN
 };
 
