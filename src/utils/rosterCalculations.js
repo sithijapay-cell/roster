@@ -148,6 +148,10 @@ export const calculateRosterStats = (shifts, currentMonthDate) => {
                 // So YES, leaves count towards "Total Hours" (Box 3) and thus "Payable" (Box 4) if threshold met.
             } else if (shiftData.type === 'PH') {
                 dayResult.dutyIn = "PH";
+            } else if (shiftData.type === 'DO') {
+                dayResult.dutyIn = "DO";
+            } else if (shiftData.type === 'SD') {
+                dayResult.dutyIn = "SD";
             }
 
             // Updates
