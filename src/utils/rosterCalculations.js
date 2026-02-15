@@ -48,7 +48,7 @@ export const calculateRosterStats = (shifts, currentMonthDate) => {
     // Check day before start
     const dayBeforeStart = addDays(startDate, -1);
     const prevKey = format(dayBeforeStart, 'yyyy-MM-dd');
-    if (shifts[prevKey]?.shifts?.includes('DN')) {
+    if (shifts[prevKey]?.shifts?.some(s => ['DN', 'OTN'].includes(s))) {
         prevDayWasNight = true;
     }
 
@@ -83,7 +83,7 @@ export const calculateRosterStats = (shifts, currentMonthDate) => {
 
             // Determine if today is Sleeping Day (SD)
             const isSleepingDay = prevDayWasNight;
-            const currentDayIsNight = shiftData.shifts && shiftData.shifts.includes('DN');
+            const currentDayIsNight = shiftData.shifts && shiftData.shifts.some(s => ['DN', 'OTN'].includes(s));
             dayResult.isSD = isSleepingDay;
 
             let activeShifts = [...(shiftData.shifts || [])];
