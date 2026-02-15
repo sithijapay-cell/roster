@@ -46,15 +46,13 @@ export const validateShiftAddition = (dateStr, shiftCode, currentShifts, allShif
     }
 
     // Rule: OT Night can only be added if a regular duty shift has already been logged?
-    // "ensure an OT Night can only be added if a regular duty shift has already been logged on that day"
-    // Wait, usually OTN is standalone? Or maybe cover?
-    // "12 overtime hours" suggests it's a full shift.
-    // The requirement says: "ensure an OT Night can only be added if a regular duty shift has already been logged on that day."
-    // This implies OTN is double duty? OR maybe they meant "Cannot be sole shift"?
-    // Let's implement literally.
-    if (shiftCode === 'OTN' && dayData.shifts.length === 0) {
-        return { valid: false, message: "OT Night requires a regular duty shift first." };
-    }
+    // User Update: "SD day we can do OT night" and "enter E or M duty and OT N at one time".
+    // This implies OTN can be standalone (for SD) or combined with M/E.
+    // We remove the restriction that OTN requires a prior duty shift.
+
+    // if (shiftCode === 'OTN' && dayData.shifts.length === 0) {
+    //    return { valid: false, message: "OT Night requires a regular duty shift first." };
+    // }
 
     // Fatigue Rule: prevent two OT Nights consecutively.
     if (shiftCode === 'OTN') {
