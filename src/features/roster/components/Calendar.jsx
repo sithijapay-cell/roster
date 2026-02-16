@@ -1,161 +1,142 @@
 import React, { useState } from 'react';
-import {
-    format,
-    addMonths,
-    subDays,
-    startOfMonth,
-    endOfMonth,
-    startOfWeek,
-    endOfWeek,
-    eachDayOfInterval,
-    isSameDay
-} from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
-import { Card } from '../../../components/ui/Card';
-import DayCell from './DayCell';
-import EditDaySheet from './EditDaySheet';
 import { useStore } from '../../../context/StoreContext';
-import { generatePDF } from '../../../services/pdfService';
-import { getReportingPeriod } from '../../../utils/reportingPeriod';
-import { Download } from 'lucide-react';
+import { cn } from '../../../lib/utils';
+import EditDaySheet from './EditDaySheet';
 
 const Calendar = () => {
+    const { shifts, updateShift } = useStore();
     const [currentDate, setCurrentDate] = useState(new Date());
-    const { shifts, profile } = useStore();
-    const [isEditOpen, setIsEditOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(null);
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-    const prevMonth = () => setCurrentDate(addMonths(currentDate, -1));
-    const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
-    const jumpToToday = () => setCurrentDate(new Date());
-
-    const handleDayClick = (day) => {
-        setSelectedDate(day);
-        setIsEditOpen(true);
-    };
-
+    // Generate days for the grid
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(monthStart);
     const startDate = startOfWeek(monthStart);
     const endDate = endOfWeek(monthEnd);
+    const days = eachDayOfInterval({ start: startDate, end: endDate });
 
-    const calendarDays = eachDayOfInterval({
-        start: startDate,
-        end: endDate
-    });
+    const handlePrevMonth = () => setCurrentDate(subMonths(currentDate, 1));
+    const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
 
-    const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const handleDayClick = (day) => {
+        setSelectedDate(day);
+        setIsSheetOpen(true);
+    };
 
-    const handleDownload = async () => {
-        // const { startDate, endDate } = getReportingPeriod(currentDate); // Not needed for generatePDF arg anymore
-        if (!profile?.name) {
-            alert("Please complete your profile (Name) before downloading.");
-            return;
-        }
-
-        try {
-            // Pass currentDate (Date object) as expected by pdfGenerator
-            const pdfBytes = await generatePDF(profile, shifts, currentDate);
-
-            if (!pdfBytes) throw new Error("No data generated");
-
-            // Create Blob and trigger download
-            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            // Use specific filename format
-            link.download = `Roster_${profile.name || 'Nurse'}_${format(currentDate, 'MMM_yyyy')}.pdf`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            // Small timeout for mobile browsers before revoking
-            setTimeout(() => URL.revokeObjectURL(url), 100);
-
-        } catch (error) {
-            console.error("Download failed", error);
-            alert("Failed to generate PDF. Please try again.");
+    const handleSaveShift = (data) => {
+        if (selectedDate) {
+            updateShift(format(selectedDate, 'yyyy-MM-dd'), data.shifts, data.type, data.customEndTimes, data.customStartTimes);
         }
     };
 
+    // Color Logic for Pills
+    const getShiftColor = (shiftCode) => {
+        if (!shiftCode) return "bg-gray-100/5 text-gray-400"; // Empty/Off
+
+        if (shiftCode === 'OFF' || shiftCode === 'DO') return "bg-slate-500/10 text-slate-400 border border-slate-500/20";
+        if (shiftCode === 'PH') return "bg-pink-500/10 text-pink-400 border border-pink-500/20";
+        if (shiftCode === 'SD') return "bg-indigo-500/10 text-indigo-300 border border-indigo-500/20"; // Sleeping Day
+
+        if (shiftCode.includes('M')) return "bg-emerald-500/20 text-emerald-300 border border-emerald-500/20"; // Morning (Green)
+        if (shiftCode.includes('E')) return "bg-blue-500/20 text-blue-300 border border-blue-500/20"; // Evening (Blue)
+        if (shiftCode.includes('N')) return "bg-violet-500/20 text-violet-300 border border-violet-500/20 shadow-[0_0_10px_rgba(139,92,246,0.15)]"; // Night (Purple)
+
+        return "bg-slate-500/10 text-slate-300";
+    };
+
     return (
-        <div className="pb-24 md:pb-10">
-            {/* Header / Controls */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-                <div>
-                    <h2 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                        {format(currentDate, 'MMMM yyyy')}
-                    </h2>
-                    <p className="text-slate-500 font-medium">Manage your duty roster</p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={handleDownload} className="gap-2">
-                        <Download className="h-4 w-4" />
-                        <span className="hidden sm:inline">Download PDF</span>
-                        <span className="sm:hidden">PDF</span>
+        <div className="flex flex-col h-full max-w-sm mx-auto relative pb-24">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4 sticky top-0 z-20 bg-background/80 backdrop-blur-md py-2">
+                <h2 className="text-xl font-bold capitalize text-foreground animate-in fade-in slide-in-from-top-2">
+                    {format(currentDate, 'MMMM yyyy')}
+                </h2>
+                <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" onClick={handlePrevMonth} className="h-8 w-8 rounded-full hover:bg-white/10 active:scale-90 transition-all">
+                        <ChevronLeft className="h-5 w-5" />
                     </Button>
-
-                    <div className="flex items-center gap-2 bg-white p-1 rounded-lg border shadow-sm w-fit">
-                        <Button variant="ghost" size="icon" onClick={prevMonth} className="hover:bg-slate-100">
-                            <ChevronLeft className="h-5 w-5 text-slate-600" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={jumpToToday} className="font-semibold text-slate-700 hover:bg-slate-100">
-                            Today
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={nextMonth} className="hover:bg-slate-100">
-                            <ChevronRight className="h-5 w-5 text-slate-600" />
-                        </Button>
-                    </div>
+                    <Button variant="ghost" size="icon" onClick={handleNextMonth} className="h-8 w-8 rounded-full hover:bg-white/10 active:scale-90 transition-all">
+                        <ChevronRight className="h-5 w-5" />
+                    </Button>
                 </div>
             </div>
 
-            {/* Calendar Grid */}
-            <Card className="border-0 shadow-xl shadow-slate-200/50 ring-1 ring-slate-200 overflow-hidden bg-white text-slate-800 rounded-xl">
-                <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50/80">
-                    {weekDays.map(day => (
-                        <div key={day} className="py-3 text-[11px] font-bold text-slate-400 uppercase tracking-widest text-center">
-                            {day}
+            {/* Days Header */}
+            <div className="grid grid-cols-7 mb-2">
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+                    <div key={i} className="text-center text-[10px] font-bold text-muted-foreground uppercase opacity-70 py-2">
+                        {day}
+                    </div>
+                ))}
+            </div>
+
+            {/* Calendar Grid - Square Cells */}
+            <div className="grid grid-cols-7 gap-1.5 auto-rows-fr">
+                {days.map((day, idx) => {
+                    const dateStr = format(day, 'yyyy-MM-dd');
+                    const shiftData = shifts[dateStr];
+                    // Handle both simple string (legacy) and object structure if store updated
+                    const shiftCode = typeof shiftData === 'string' ? shiftData : shiftData?.shifts?.[0];
+
+                    const isCurrentMonth = isSameMonth(day, monthStart);
+                    const isTodayDesc = isSameDay(day, new Date());
+
+                    // Determine if OT (add glow/border)
+                    const isOT = shiftCode && (shiftCode.includes('OT') || shiftCode.includes('Extra'));
+
+                    return (
+                        <div
+                            key={idx}
+                            onClick={() => handleDayClick(day)}
+                            className={cn(
+                                "aspect-square rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group overflow-hidden border border-transparent",
+                                isCurrentMonth ? "bg-card/40 hover:bg-card/80 hover:scale-105 hover:border-white/10" : "opacity-20 grayscale",
+                                isTodayDesc && "ring-1 ring-primary ring-offset-1 ring-offset-background bg-primary/5",
+                                selectedDate && isSameDay(day, selectedDate) && "ring-2 ring-accent z-10 scale-105"
+                            )}
+                        >
+                            {/* Date Number */}
+                            <span className={cn(
+                                "text-[10px] font-medium mb-0.5 z-10",
+                                isTodayDesc ? "text-primary font-bold" : "text-muted-foreground"
+                            )}>
+                                {format(day, 'd')}
+                            </span>
+
+                            {/* Shift Pill */}
+                            {shiftCode && (
+                                <div className={cn(
+                                    "px-1.5 py-0.5 rounded-[4px] text-[8px] font-extrabold tracking-wide z-10 transition-all",
+                                    getShiftColor(shiftCode),
+                                    isOT && "border-amber-500/40 shadow-[0_0_8px_rgba(245,158,11,0.15)]"
+                                )}>
+                                    {shiftCode.replace('OFF', 'DO')}
+                                </div>
+                            )}
+
+                            {/* Glass Reflection Effect */}
+                            <div className="absolute -inset-full top-0 block h-full w-1/2 -skew-x-12 bg-gradient-to-r from-transparent to-white opacity-20 group-hover:animate-shine" />
                         </div>
-                    ))}
-                </div>
+                    );
+                })}
+            </div>
 
-                <div className="grid grid-cols-7 bg-slate-200 gap-px border-l border-t border-slate-200">
-                    {calendarDays.map((day, idx) => {
-                        const dateKey = format(day, 'yyyy-MM-dd');
-                        let data = shifts[dateKey] ? { ...shifts[dateKey] } : { shifts: [], type: null };
-
-                        // Auto-detect Sleeping Day (SD) from previous night shift
-                        const prevDay = subDays(day, 1);
-                        const prevKey = format(prevDay, 'yyyy-MM-dd');
-                        const prevData = shifts[prevKey];
-
-                        if (prevData?.shifts?.includes('DN')) {
-                            if (!data.type) {
-                                data.type = 'SD';
-                            }
-                        }
-
-                        return (
-                            <DayCell
-                                key={dateKey}
-                                day={day}
-                                currentMonth={currentDate}
-                                data={data}
-                                onClick={handleDayClick}
-                            />
-                        );
-                    })}
-                </div>
-            </Card>
-
+            {/* Edit Sheet */}
             <EditDaySheet
-                isOpen={isEditOpen}
-                onClose={() => setIsEditOpen(false)}
+                isOpen={isSheetOpen}
+                onClose={() => setIsSheetOpen(false)}
                 date={selectedDate}
-                currentData={selectedDate ? shifts[format(selectedDate, 'yyyy-MM-dd')] : null}
+                currentData={selectedDate ? {
+                    shifts: shifts[format(selectedDate, 'yyyy-MM-dd')],
+                    // Pass partials if/when store provides them. For now, EditDaySheet likely re-fetches or defaults.
+                    // Assuming shifts[date] returns the full object if using new structure, or just codes.
+                    // EditDaySheet handles the parsing.
+                } : null}
+                onSave={handleSaveShift}
             />
         </div>
     );

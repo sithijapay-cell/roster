@@ -39,6 +39,31 @@ export function calculateHours(startStr, endStr) {
     return duration;
 }
 
+// Helper to get formatted start/end and duration for a single shift
+export function calculateShiftDuration(code, customEndTimes = {}, customStartTimes = {}, date = new Date()) {
+    if (!code || !SHIFT_TIMES[code]) return { start: '-', end: '-', duration: 0 };
+
+    const defaultTimes = SHIFT_TIMES[code];
+    let startStr = defaultTimes.start;
+    let endStr = defaultTimes.end;
+
+    // Apply strict overrides if available
+    if (customStartTimes[code]) startStr = customStartTimes[code];
+    if (customEndTimes[code]) endStr = customEndTimes[code];
+
+    // Special cases
+    if (code === 'OFF' || code === 'PH' || code === 'SD' || code === 'DO' || code === 'CL' || code === 'VL') {
+        return { start: startStr, end: '-', duration: 0 };
+    }
+
+    const duration = calculateHours(startStr, endStr);
+    return {
+        start: startStr,
+        end: endStr,
+        duration: duration % 1 === 0 ? duration : duration.toFixed(1)
+    };
+}
+
 export const calculateRosterStats = (shifts, currentMonthDate) => {
     const { startDate, endDate } = getReportingPeriod(currentMonthDate);
     const weeks = [];

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
+import { SHIFT_TIMES } from '../utils/rosterCalculations';
 import { useAuth } from '../features/auth/context/AuthContext';
 import * as userService from '../features/auth/services/userService';
 
@@ -141,7 +142,8 @@ export const StoreProvider = ({ children }) => {
         ...authContextProps,
         updateProfile,
         addShift,
-        removeShift
+        removeShift,
+        shiftTypes: SHIFT_TIMES // Expose constant shift definitions
     };
 
     return (

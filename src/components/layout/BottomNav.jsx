@@ -3,58 +3,60 @@ import { NavLink } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import {
     CalendarDays,
-    FileText,
+    Home,
     User as UserIcon,
-    LayoutDashboard,
-    Menu,
     Calculator
 } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from '../ui/Sheet';
-import { Button } from '../ui/Button';
-import Sidebar from './Sidebar'; // Reuse sidebar for mobile drawer if needed, but here we use bottom tabs
 
 const BottomNav = ({ className }) => {
     const navItems = [
-
+        { to: '/roster', exact: true, icon: Home, label: 'Home' }, // Dashboard
         { to: '/roster/calendar', icon: CalendarDays, label: 'Roster' },
         { to: '/tools', icon: Calculator, label: 'Tools' },
         { to: '/roster/profile', icon: UserIcon, label: 'Profile' },
     ];
 
     return (
-        <div className={cn("fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60", className)}>
-            <nav className="grid h-16 grid-cols-3 items-center justify-items-center">
+        <div className={cn(
+            "fixed bottom-0 left-0 right-0 z-50",
+            "bg-background/80 backdrop-blur-xl border-t border-white/5 shadow-[0_-5px_20px_rgba(0,0,0,0.1)]",
+            "pb-safe", // Safe area padding
+            className
+        )}>
+            <nav className="grid h-16 grid-cols-4 items-center justify-items-center">
                 {navItems.map((item) => (
                     <NavLink
                         key={item.to}
                         to={item.to}
-                        end={item.to === '/roster'}
+                        end={item.exact}
                         className={({ isActive }) =>
                             cn(
-                                "flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors",
+                                "flex flex-col items-center justify-center gap-1.5 transition-all duration-300",
+                                "w-full h-full",
                                 isActive
                                     ? "text-primary"
-                                    : "text-muted-foreground hover:text-primary"
+                                    : "text-muted-foreground/60 hover:text-muted-foreground"
                             )
                         }
                     >
-                        <item.icon className="h-5 w-5" />
-                        {item.label}
+                        {({ isActive }) => (
+                            <>
+                                <div className={cn(
+                                    "p-1.5 rounded-full transition-all duration-300",
+                                    isActive ? "bg-primary/10 scale-110" : "bg-transparent"
+                                )}>
+                                    <item.icon className={cn("h-5 w-5", isActive && "fill-current")} strokeWidth={isActive ? 2.5 : 2} />
+                                </div>
+                                <span className={cn(
+                                    "text-[10px] font-medium tracking-wide",
+                                    isActive ? "font-semibold" : ""
+                                )}>
+                                    {item.label}
+                                </span>
+                            </>
+                        )}
                     </NavLink>
                 ))}
-
-                {/* Menu Item for More/Sheet */}
-                <Sheet>
-                    <SheetTrigger asChild>
-                        <button className="flex flex-col items-center justify-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-primary transition-colors">
-                            <Menu className="h-5 w-5" />
-                            Menu
-                        </button>
-                    </SheetTrigger>
-                    <SheetContent side="right" className="w-[80vw] sm:w-[350px] p-0">
-                        <Sidebar className="w-full border-none shadow-none" />
-                    </SheetContent>
-                </Sheet>
             </nav>
         </div>
     );

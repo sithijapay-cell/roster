@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { calculateIVRate, calculateBMI, calculateBSA } from ('../../utils/medicalCalculators');
+import { calculateIVRate, calculateBMI, calculateBSA } from '../../utils/medicalCalculators';
 import { Calculator, Activity, Droplets, Ruler } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -167,7 +167,8 @@ const CalculatorsPage = () => {
                                         <div className="text-xs text-muted-foreground uppercase font-bold">BMI</div>
                                         <div className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-1">{bmiResult.value}</div>
                                         <div className={`text-xs font-medium px-2 py-0.5 rounded-full inline-block mt-1 ${bmiResult.category === 'Normal' ? 'bg-green-100 text-green-700' :
-                                                bmiResult.category === 'Obese' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+                                                bmiResult.category === 'Obese' ? 'bg-red-100 text-red-700' :
+                                                    'bg-yellow-100 text-yellow-700'
                                             }`}>
                                             {bmiResult.category}
                                         </div>

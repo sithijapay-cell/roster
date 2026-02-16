@@ -21,6 +21,7 @@ import ProfilePage from './features/nurses/pages/ProfilePage';
 import NewsPage from './features/news/NewsPage';
 import OTPage from './features/ot/pages/OTPage';
 import CalculatorsPage from './features/tools/CalculatorsPage';
+import DashboardPage from './features/dashboard/pages/DashboardPage'; // New Dashboard
 
 import AuthGuard from './components/layout/AuthGuard';
 
@@ -42,9 +43,8 @@ const App = () => {
                   <AppLayout />
                 </AuthGuard>
               }>
-                {/* Dashboard Root -> Summary View */}
-                {/* Dashboard Root -> Redirect to Calendar */}{/* SummaryPage removed as per request */}
-                <Route index element={<Navigate to="calendar" replace />} />
+                {/* Dashboard Root */}
+                <Route index element={<DashboardPage />} />
 
                 <Route path="calendar" element={<CalendarPage />} />
                 <Route path="ot" element={<OTPage />} />

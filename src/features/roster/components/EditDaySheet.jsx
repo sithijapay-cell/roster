@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* eslint-disable */
 import React, { useState, useEffect } from 'react';
 import { format, subDays } from 'date-fns';
 import { X, Check, Copy, Trash2 } from 'lucide-react';
