@@ -25,29 +25,32 @@ export default defineConfig({
       registerType: 'autoUpdate',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        navigateFallbackDenylist: [/^\/__\//] // Ignore Firebase Auth URLs
+        navigateFallbackDenylist: [/^\/__\//], // Ignore Firebase Auth URLs
+        importScripts: ['/custom-sw.js']
       },
       manifest: {
         name: 'ShiftMaster',
         short_name: 'ShiftMaster',
         description: 'ShiftMaster - Smart Nursing Roster App',
         theme_color: '#ffffff',
-        background_color: '#ffffff',
+        background_color: '#0c4a6e',
         display: 'standalone',
         orientation: 'portrait',
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: 'shiftmasterlogo.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any maskable'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'shiftmasterlogo.png',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any maskable'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'shiftmasterlogo.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'

@@ -33,19 +33,25 @@ const Calendar = () => {
         }
     };
 
-    // Color Logic for Pills
+    // Color Logic for Pills - High Contrast
     const getShiftColor = (shiftCode) => {
-        if (!shiftCode) return "bg-gray-100/5 text-gray-400"; // Empty/Off
+        if (!shiftCode || typeof shiftCode !== 'string') return "bg-gray-100/5 text-gray-400";
 
-        if (shiftCode === 'OFF' || shiftCode === 'DO') return "bg-slate-500/10 text-slate-400 border border-slate-500/20";
-        if (shiftCode === 'PH') return "bg-pink-500/10 text-pink-400 border border-pink-500/20";
-        if (shiftCode === 'SD') return "bg-indigo-500/10 text-indigo-300 border border-indigo-500/20"; // Sleeping Day
+        if (shiftCode === 'OFF' || shiftCode === 'DO') return "bg-slate-200 text-slate-700 border border-slate-300";
+        if (shiftCode === 'PH') return "bg-pink-100 text-pink-700 border border-pink-300";
+        if (shiftCode === 'VL') return "bg-rose-100 text-rose-700 border border-rose-300"; // Vacation Leave
 
-        if (shiftCode.includes('M')) return "bg-emerald-500/20 text-emerald-300 border border-emerald-500/20"; // Morning (Green)
-        if (shiftCode.includes('E')) return "bg-blue-500/20 text-blue-300 border border-blue-500/20"; // Evening (Blue)
-        if (shiftCode.includes('N')) return "bg-violet-500/20 text-violet-300 border border-violet-500/20 shadow-[0_0_10px_rgba(139,92,246,0.15)]"; // Night (Purple)
+        // Core Shifts - Solid, Vibrant Colors
+        if (shiftCode.includes('M')) return "bg-emerald-600 text-white shadow-sm border border-emerald-700"; // Morning
+        if (shiftCode.includes('E')) return "bg-blue-600 text-white shadow-sm border border-blue-700"; // Evening
+        if (shiftCode.includes('N')) return "bg-violet-700 text-white shadow-sm border border-violet-800"; // Night
 
-        return "bg-slate-500/10 text-slate-300";
+        if (shiftCode.includes('OT')) return "bg-amber-500 text-black border border-amber-600 font-black"; // OT
+
+        if (shiftCode === 'CL') return "bg-yellow-400 text-yellow-900 border border-yellow-500";
+        if (shiftCode === 'SD') return "bg-indigo-200 text-indigo-800 border border-indigo-300";
+
+        return "bg-slate-100 text-slate-500";
     };
 
     return (
@@ -74,52 +80,81 @@ const Calendar = () => {
                 ))}
             </div>
 
-            {/* Calendar Grid - Square Cells */}
-            <div className="grid grid-cols-7 gap-1.5 auto-rows-fr">
+            {/* Calendar Grid - Larger Cells */}
+            <div className="grid grid-cols-7 gap-2 auto-rows-fr px-2">
                 {days.map((day, idx) => {
                     const dateStr = format(day, 'yyyy-MM-dd');
                     const shiftData = shifts[dateStr];
-                    // Handle both simple string (legacy) and object structure if store updated
-                    const shiftCode = typeof shiftData === 'string' ? shiftData : shiftData?.shifts?.[0];
+                    const rawShift = shiftData;
+
+                    // --- LOGIC: EXTRACT ALL APPLICABLE CODES ---
+                    const activeCodesSet = new Set();
+
+                    // 1. ADD Shifts from Array (New Structure)
+                    if (rawShift?.shifts && Array.isArray(rawShift.shifts)) {
+                        rawShift.shifts.forEach(s => activeCodesSet.add(s));
+                    }
+                    // 2. ADD Shifts from Legacy String
+                    else if (typeof rawShift === 'string') {
+                        activeCodesSet.add(rawShift);
+                    }
+
+                    // 3. ADD Type (e.g. CL, DO, PH) - Additive
+                    if (rawShift?.type && rawShift.type !== 'Work') {
+                        activeCodesSet.add(rawShift.type);
+                    }
+
+                    // 4. Auto-SD Logic (Previous Day Check)
+                    // If Set is empty or just contains OT, we still check SD entitlement
+                    const prevDate = new Date(day);
+                    prevDate.setDate(prevDate.getDate() - 1);
+                    const prevStr = format(prevDate, 'yyyy-MM-dd');
+                    const prevData = shifts[prevStr];
+                    const prevShift = typeof prevData === 'string' ? prevData : prevData?.shifts?.[0];
+
+                    if (prevShift === 'DN') {
+                        activeCodesSet.add('SD');
+                    }
+
+                    const uniqueCodes = Array.from(activeCodesSet);
 
                     const isCurrentMonth = isSameMonth(day, monthStart);
                     const isTodayDesc = isSameDay(day, new Date());
-
-                    // Determine if OT (add glow/border)
-                    const isOT = shiftCode && (shiftCode.includes('OT') || shiftCode.includes('Extra'));
+                    const isSelected = selectedDate && isSameDay(day, selectedDate);
 
                     return (
                         <div
                             key={idx}
                             onClick={() => handleDayClick(day)}
                             className={cn(
-                                "aspect-square rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group overflow-hidden border border-transparent",
-                                isCurrentMonth ? "bg-card/40 hover:bg-card/80 hover:scale-105 hover:border-white/10" : "opacity-20 grayscale",
-                                isTodayDesc && "ring-1 ring-primary ring-offset-1 ring-offset-background bg-primary/5",
-                                selectedDate && isSameDay(day, selectedDate) && "ring-2 ring-accent z-10 scale-105"
+                                "min-h-[120px] h-full rounded-xl flex flex-col items-center justify-start py-2 cursor-pointer transition-all duration-300 relative group border bg-card",
+                                isCurrentMonth ? "hover:bg-card/80 hover:border-primary/30" : "opacity-40 grayscale bg-muted/20 border-transparent",
+                                isTodayDesc ? "border-primary/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)] bg-primary/5" : "border-border/40",
+                                isSelected && "ring-2 ring-primary border-primary z-10 scale-[1.02] shadow-lg"
                             )}
                         >
                             {/* Date Number */}
                             <span className={cn(
-                                "text-[10px] font-medium mb-0.5 z-10",
-                                isTodayDesc ? "text-primary font-bold" : "text-muted-foreground"
+                                "text-sm font-bold mb-2 z-10",
+                                isTodayDesc ? "text-primary" : "text-foreground/80"
                             )}>
                                 {format(day, 'd')}
                             </span>
 
-                            {/* Shift Pill */}
-                            {shiftCode && (
-                                <div className={cn(
-                                    "px-1.5 py-0.5 rounded-[4px] text-[8px] font-extrabold tracking-wide z-10 transition-all",
-                                    getShiftColor(shiftCode),
-                                    isOT && "border-amber-500/40 shadow-[0_0_8px_rgba(245,158,11,0.15)]"
-                                )}>
-                                    {shiftCode.replace('OFF', 'DO')}
-                                </div>
-                            )}
+                            {/* Shift Pills Container - Stacked Vertically */}
+                            <div className="flex flex-col gap-1 w-full px-1 z-10">
+                                {uniqueCodes.map((code, i) => (
+                                    <div key={i} className={cn(
+                                        "w-full text-center py-1 rounded-md text-[10px] font-bold tracking-wide uppercase shadow-sm leading-tight break-words",
+                                        getShiftColor(code)
+                                    )}>
+                                        {code.replace('OFF', 'DO')}
+                                    </div>
+                                ))}
+                            </div>
 
-                            {/* Glass Reflection Effect */}
-                            <div className="absolute -inset-full top-0 block h-full w-1/2 -skew-x-12 bg-gradient-to-r from-transparent to-white opacity-20 group-hover:animate-shine" />
+                            {/* Active Glow for Today */}
+                            {isTodayDesc && <div className="absolute inset-0 bg-primary/5 blur-xl -z-10" />}
                         </div>
                     );
                 })}
@@ -130,12 +165,7 @@ const Calendar = () => {
                 isOpen={isSheetOpen}
                 onClose={() => setIsSheetOpen(false)}
                 date={selectedDate}
-                currentData={selectedDate ? {
-                    shifts: shifts[format(selectedDate, 'yyyy-MM-dd')],
-                    // Pass partials if/when store provides them. For now, EditDaySheet likely re-fetches or defaults.
-                    // Assuming shifts[date] returns the full object if using new structure, or just codes.
-                    // EditDaySheet handles the parsing.
-                } : null}
+                currentData={selectedDate ? shifts[format(selectedDate, 'yyyy-MM-dd')] : null}
                 onSave={handleSaveShift}
             />
         </div>

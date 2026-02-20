@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { Button } from '../ui/Button';
 import { useAuth } from '../../features/auth/context/AuthContext';
@@ -21,14 +21,17 @@ const Sidebar = ({ className }) => {
 
         { to: '/roster/calendar', icon: CalendarDays, label: 'Roster' },
         { to: '/news', icon: Newspaper, label: 'News' },
-        { to: '/tools', icon: Calculator, label: 'Tools' },
-        { to: '/roster/profile', icon: UserIcon, label: 'Profile' },
+        { to: '/roster/tools', icon: Calculator, label: 'Tools' },
+        { to: '/roster/settings', icon: Settings, label: 'Settings' },
     ];
 
     return (
         <div className={cn("flex h-full w-64 flex-col border-r bg-card shadow-sm", className)}>
             <div className="flex h-16 items-center border-b px-6">
-                <span className="text-lg font-bold text-primary">ShiftMaster</span>
+                <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer">
+                    <img src="/shiftmasterlogo.png" alt="Logo" className="h-8 w-auto" />
+                    <span className="text-lg font-bold text-primary">ShiftMaster</span>
+                </Link>
             </div>
 
             <div className="flex-1 overflow-y-auto py-4">

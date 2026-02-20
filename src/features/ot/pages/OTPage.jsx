@@ -150,8 +150,8 @@ const OTPage = () => {
                                 {loading ? "Generating..." : "Download Form 108"}
                             </Button>
                         ) : (
-                            <Button variant="outline" className="w-full border-amber-300 text-amber-700 hover:bg-amber-100" onClick={() => window.location.href = '/roster/profile'}>
-                                Go to Profile
+                            <Button variant="outline" className="w-full border-amber-300 text-amber-700 hover:bg-amber-100" onClick={() => window.location.href = '/roster/settings'}>
+                                Go to Settings
                             </Button>
                         )}
                     </CardFooter>

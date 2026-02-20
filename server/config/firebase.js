@@ -38,4 +38,6 @@ if (serviceAccount) {
     console.error(initError);
 }
 
-module.exports = { admin, initialized, initError };
+const db = admin.firestore();
+
+module.exports = { admin, db, initialized, initError };

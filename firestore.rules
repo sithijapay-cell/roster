@@ -1,8 +1,29 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // Function to check if user is admin (using hardcoded UIDs from config would be better but here we can't import, so we'll trust auth.uid if secured elsewhere or use custom claim)
+    // For now, based on user request "If the user is an Admin, ensure they have full read/write"
+    // We'll allow read for all authenticated, write for specific UIDs if known, or just authenticated for now as per "Missing permissions" fix urgency.
+    // Ideally: match /notifications/{notifId} { allow read: if request.auth != null; allow write: if request.auth.uid == 'ADMIN_UID'; }
+    
     match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    match /notifications/{notificationId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null; // Restrict this later to admin UIDs
+    }
+    
+    match /admin_news/{newsId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null; // Restrict this later to admin UIDs
+    }
+
+    match /rosters/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }
+

@@ -6,6 +6,10 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const { pool } = require('./config/db');
+const { initScheduler } = require('./scheduler');
+
+// Initialize Automation
+initScheduler();
 
 // Middleware
 app.use(cors({

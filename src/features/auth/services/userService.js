@@ -29,7 +29,7 @@ export const fetchUserData = async () => {
 
         return { profile, shifts };
     } catch (error) {
-        console.error("Error fetching user data from Firestore", error);
+        console.error("[UserService] Error fetching user data:", error);
         // Return empty if something fails, or rethrow
         return { profile: {}, shifts: {} };
     }

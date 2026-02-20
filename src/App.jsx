@@ -17,13 +17,15 @@ import SignupPage from './features/auth/pages/SignupPage';
 // Feature Pages
 import SummaryPage from './features/roster/pages/SummaryPage';
 import CalendarPage from './features/roster/pages/CalendarPage';
-import ProfilePage from './features/nurses/pages/ProfilePage';
+import SettingsPage from './features/nurses/pages/SettingsPage';
 import NewsPage from './features/news/NewsPage';
 import OTPage from './features/ot/pages/OTPage';
 import CalculatorsPage from './features/tools/CalculatorsPage';
 import DashboardPage from './features/dashboard/pages/DashboardPage'; // New Dashboard
+import AdminDashboard from './features/admin/pages/AdminDashboard';
 
 import AuthGuard from './components/layout/AuthGuard';
+import AdminGuard from './components/layout/AdminGuard';
 
 const App = () => {
   return (
@@ -48,7 +50,8 @@ const App = () => {
 
                 <Route path="calendar" element={<CalendarPage />} />
                 <Route path="ot" element={<OTPage />} />
-                <Route path="profile" element={<ProfilePage />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="profile" element={<Navigate to="settings" replace />} />
                 <Route path="tools" element={<CalculatorsPage />} />
               </Route>
 
@@ -60,6 +63,15 @@ const App = () => {
               }>
                 <Route index element={<NewsPage />} />
               </Route>
+
+              {/* Secure Admin Portal — standalone, no bottom nav */}
+              <Route path="/admin-portal" element={
+                <AdminGuard>
+                  <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
+                    <AdminDashboard />
+                  </div>
+                </AdminGuard>
+              } />
 
 
               {/* Catch all */}

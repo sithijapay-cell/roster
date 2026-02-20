@@ -13,6 +13,7 @@ export const SHIFT_TYPES = {
 export const DAY_TYPES = {
     DO: { label: "Day Off", code: "DO", color: "bg-green-100 text-green-800 border-green-200" },
     PH: { label: "Public Holiday", code: "PH", color: "bg-red-100 text-red-800 border-red-200" },
+    PH_LEAVE: { label: "PH (Leave)", code: "PH_LEAVE", color: "bg-rose-100 text-rose-800 border-rose-200" },
     CL: { label: "Casual Leave", code: "CL", color: "bg-gray-100 text-gray-800 border-gray-200" },
     VL: { label: "Vacation Leave", code: "VL", color: "bg-pink-100 text-pink-800 border-pink-200" },
     SD: { label: "Sleeping Day", code: "SD", color: "bg-indigo-50 text-indigo-700 border-indigo-200" }, // Auto set after DN
@@ -20,7 +21,9 @@ export const DAY_TYPES = {
 
 // Check if a day has a specific shift type
 export const hasShift = (dayData, shiftCode) => {
-    return dayData?.shifts?.includes(shiftCode);
+    if (!dayData) return false;
+    if (typeof dayData === 'string') return dayData === shiftCode;
+    return Array.isArray(dayData.shifts) && dayData.shifts.includes(shiftCode);
 };
 
 // Check if a day has a specific day type
@@ -29,7 +32,16 @@ export const isDayType = (dayData, typeCode) => {
 };
 
 export const validateShiftAddition = (dateStr, shiftCode, currentShifts, allShifts) => {
-    const dayData = allShifts[dateStr] || { shifts: [], type: null };
+    // Normalize dayData to object structure
+    let dayData = allShifts[dateStr];
+    if (typeof dayData === 'string') {
+        dayData = { shifts: [dayData], type: null };
+    } else if (!dayData) {
+        dayData = { shifts: [], type: null };
+    }
+
+    // Ensure shifts is an array
+    const existingShifts = Array.isArray(dayData.shifts) ? dayData.shifts : [];
 
     // Rule: Cannot log shifts on Casual Leave
     if (dayData.type === 'CL') {
@@ -37,11 +49,8 @@ export const validateShiftAddition = (dateStr, shiftCode, currentShifts, allShif
     }
 
     // Rule: Prohibit more than one night shift (DN or OTN) on same day? 
-    // "It prohibits logging more than one night shift on the same day."
-    // Assuming DN and OTN are arguably night shifts. Or maybe two DNs?
-    // Let's assume one "Night" per day.
     const isNight = ['DN', 'OTN'].includes(shiftCode);
-    if (isNight && (dayData.shifts.includes('DN') || dayData.shifts.includes('OTN'))) {
+    if (isNight && (existingShifts.includes('DN') || existingShifts.includes('OTN'))) {
         return { valid: false, message: "Cannot have multiple night shifts on the same day." };
     }
 

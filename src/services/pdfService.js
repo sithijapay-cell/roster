@@ -1,4 +1,4 @@
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, TextAlignment } from 'pdf-lib';
 import { format } from 'date-fns';
 import { calculateRosterStats } from '../utils/rosterCalculations';
 
@@ -13,14 +13,15 @@ export const generatePDF = async (profile, shifts, currentMonthDate) => {
         const { weeks, monthlyStats, startDate, endDate } = calculateRosterStats(shifts, currentMonthDate);
 
         // Helper to fill fields
-        const fillField = (fieldName, value) => {
+        const fillField = (fieldName, value, { fontSize = FONT_SIZE, alignment = undefined } = {}) => {
             try {
                 // SPECIAL HANDLING for MISSING/MISNAMED FIELDS in Template
                 if (fieldName === 'week1_in7') {
                     const candidates = form.getFields().filter(f => f.getName() === 'week1_in6');
                     if (candidates.length >= 2) {
                         const field = candidates[1];
-                        field.setFontSize(FONT_SIZE);
+                        field.setFontSize(fontSize);
+                        if (alignment !== undefined && typeof field.setAlignment === 'function') field.setAlignment(alignment);
                         if (typeof field.setText === 'function') field.setText(value);
                         return;
                     }
@@ -29,7 +30,8 @@ export const generatePDF = async (profile, shifts, currentMonthDate) => {
                     const candidates = form.getFields().filter(f => f.getName() === 'week5_hrs3');
                     if (candidates.length >= 2) {
                         const field = candidates[1];
-                        field.setFontSize(FONT_SIZE);
+                        field.setFontSize(fontSize);
+                        if (alignment !== undefined && typeof field.setAlignment === 'function') field.setAlignment(alignment);
                         if (typeof field.setText === 'function') field.setText(value);
                         return;
                     }
@@ -38,7 +40,10 @@ export const generatePDF = async (profile, shifts, currentMonthDate) => {
                 const matchingFields = form.getFields().filter(f => f.getName() === fieldName);
                 if (matchingFields.length > 0) {
                     matchingFields.forEach(field => {
-                        field.setFontSize(FONT_SIZE);
+                        field.setFontSize(fontSize);
+                        if (alignment !== undefined && typeof field.setAlignment === 'function') {
+                            field.setAlignment(alignment);
+                        }
                         if (typeof field.setText === 'function') {
                             field.setText(value);
                         }
@@ -53,6 +58,7 @@ export const generatePDF = async (profile, shifts, currentMonthDate) => {
         fillField('ward_number_name', profile.ward || '');
         fillField('basic_salary', profile.basicSalary || '');
         fillField('ot_rate_per_hour', profile.otRate || '');
+        fillField('salary_number', profile.salaryNumber || ''); // Attempt to fill if exists
 
         // Dates
         fillField('start_year_month1', format(startDate, 'yy/MM'));
@@ -60,7 +66,9 @@ export const generatePDF = async (profile, shifts, currentMonthDate) => {
         fillField('start_date1', format(startDate, 'yyyy/MM/dd'));
         fillField('start_YY_MM1', format(startDate, 'yy/MM'));
         fillField('start_DD1', format(startDate, 'dd'));
-        fillField('Month_Start_YY_MM_DD2', format(startDate, 'yy/MM/dd'));
+
+        // Month_Start_YY_MM_DD2: decrease font size (9pt) and center align
+        fillField('Month_Start_YY_MM_DD2', format(startDate, 'yy/MM/dd'), { fontSize: 9, alignment: TextAlignment.Center });
 
         fillField('end_year_month1', format(endDate, 'yy/MM'));
         fillField('Month_end_date2', format(endDate, 'dd'));
@@ -74,29 +82,29 @@ export const generatePDF = async (profile, shifts, currentMonthDate) => {
         fillField('date_form_downloaded', format(new Date(), 'yyyy/MM/dd'));
 
         // Table Dates
-        const fillTableDates = (fieldName, value) => {
-            const fields = form.getFields().filter(f => f.getName() === fieldName);
-            fields.forEach(f => {
-                if (typeof f.setText === 'function') {
-                    f.setFontSize(FONT_SIZE);
-                    f.setText(value);
-                }
-            });
-        };
-        fillTableDates('start_year_month_date3', format(startDate, 'yy/MM/dd'));
-        fillTableDates('end_year_month_date3', format(endDate, 'yy/MM/dd'));
+        // start_year_month_date3 & end_year_month_date3: Center align
+        fillField('start_year_month_date3', format(startDate, 'yy/MM/dd'), { alignment: TextAlignment.Center });
+        fillField('end_year_month_date3', format(endDate, 'yy/MM/dd'), { alignment: TextAlignment.Center });
+
         fillField('start_year_month_date4', format(startDate, 'yy/MM/dd'));
         fillField('end_year_month_date4', format(endDate, 'yy/MM/dd'));
         fillField('date_submitted', format(endDate, 'yy/MM/dd'));
 
         // 2. FILL LEAVE DATA
         const leaves = [];
-        Object.entries(shifts).forEach(([dateStr, data]) => {
-            // Exclude Work, DO (Day Off), and SD (Sleeping Day) from the Leave Chart
-            if (data.type && !['Work', 'DO', 'SD'].includes(data.type)) {
-                leaves.push({ date: dateStr, type: data.type });
+        const dateIterator = new Date(startDate);
+        while (dateIterator <= endDate) {
+            const dateStr = format(dateIterator, 'yyyy-MM-dd');
+            const data = shifts[dateStr];
+
+            // Check Explicit Types - CL, VL, PH, PH_LEAVE (displayed as PH)
+            if (data?.type && ['CL', 'VL', 'PH', 'PH_LEAVE'].includes(data.type)) {
+                leaves.push({ date: dateStr, type: data.type === 'PH_LEAVE' ? 'PH' : data.type });
             }
-        });
+
+            dateIterator.setDate(dateIterator.getDate() + 1);
+        }
+
         leaves.sort((a, b) => new Date(a.date) - new Date(b.date));
 
         // Page 1 (1-7)
@@ -129,7 +137,7 @@ export const generatePDF = async (profile, shifts, currentMonthDate) => {
                 const dayNum = dIndex + 1;
                 fillField(`week${weekNum}_date${dayNum}`, format(day.date, 'MM/dd'));
 
-                if (day.dutyIn) fillField(`week${weekNum}_in${dayNum}`, day.dutyIn);
+                if (day.dutyIn) fillField(`week${weekNum}_in${dayNum}`, day.dutyIn === 'PH_LEAVE' ? 'PH' : day.dutyIn);
                 if (day.dutyOut) fillField(`week${weekNum}_out${dayNum}`, day.dutyOut);
                 if (day.dutyHrs) fillField(`week${weekNum}_hrs${dayNum}`, day.dutyHrs);
 

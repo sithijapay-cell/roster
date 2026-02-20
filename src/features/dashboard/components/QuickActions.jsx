@@ -36,9 +36,9 @@ const QuickActions = () => {
                     iconColor="text-purple-600"
                 />
                 <ActionButton
-                    to="/roster/profile"
+                    to="/roster/settings"
                     icon={User}
-                    label="My Profile"
+                    label="My Settings"
                     colorClass="bg-pink-50"
                     iconColor="text-pink-600"
                 />

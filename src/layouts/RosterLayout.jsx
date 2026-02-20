@@ -37,7 +37,7 @@ const RosterLayout = ({ children }) => {
                     <nav className="flex items-center space-x-1">
                         <NavItem to="/roster" icon={CalendarIcon} label="Smart Roster" />
                         <NavItem to="/roster/summary" icon={FileText} label="Summary" />
-                        <NavItem to="/roster/profile" icon={User} label="Profile" />
+                        <NavItem to="/roster/settings" icon={User} label="Settings" />
                     </nav>
                 </div>
             </header>

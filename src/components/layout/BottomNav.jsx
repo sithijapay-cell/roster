@@ -12,8 +12,8 @@ const BottomNav = ({ className }) => {
     const navItems = [
         { to: '/roster', exact: true, icon: Home, label: 'Home' }, // Dashboard
         { to: '/roster/calendar', icon: CalendarDays, label: 'Roster' },
-        { to: '/tools', icon: Calculator, label: 'Tools' },
-        { to: '/roster/profile', icon: UserIcon, label: 'Profile' },
+        { to: '/roster/tools', icon: Calculator, label: 'Tools' },
+        { to: '/roster/settings', icon: UserIcon, label: 'Settings' },
     ];
 
     return (

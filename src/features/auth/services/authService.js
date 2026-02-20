@@ -7,7 +7,7 @@ import {
     sendEmailVerification,
     updateProfile,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp, increment } from 'firebase/firestore';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -15,6 +15,10 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 export const loginWithEmail = async (email, password) => {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        // Track lastLogin for admin analytics
+        try {
+            await setDoc(doc(db, 'users', userCredential.user.uid), { lastLogin: serverTimestamp() }, { merge: true });
+        } catch (e) { /* non-critical */ }
         return { success: true, user: userCredential.user };
     } catch (error) {
         console.error("Login failed", error);
@@ -33,13 +37,32 @@ export const signupWithEmail = async (email, password, profileData) => {
             await updateProfile(user, { displayName: profileData.name });
         }
 
+        // Check for referral
+        const referrerUid = sessionStorage.getItem('referrer_uid');
+
         // Create Profile in Firestore
         await setDoc(doc(db, "users", user.uid), {
             email: email,
             uid: user.uid,
             createdAt: new Date().toISOString(),
+            referralCount: 0,
+            referredBy: referrerUid || null,
             ...profileData
         });
+
+        // Increment referrer's count
+        if (referrerUid && referrerUid !== user.uid) {
+            try {
+                const referrerRef = doc(db, 'users', referrerUid);
+                const referrerSnap = await getDoc(referrerRef);
+                if (referrerSnap.exists()) {
+                    await setDoc(referrerRef, { referralCount: increment(1) }, { merge: true });
+                }
+            } catch (e) {
+                console.warn('Referral increment failed:', e.message);
+            }
+            sessionStorage.removeItem('referrer_uid');
+        }
 
         return { success: true, user: user };
     } catch (error) {
@@ -78,6 +101,9 @@ export const loginWithGoogle = async () => {
         const userSnap = await getDoc(userRef);
 
         if (!userSnap.exists()) {
+            // Check for referral
+            const referrerUid = sessionStorage.getItem('referrer_uid');
+
             // Create new profile for Google User
             await setDoc(userRef, {
                 email: user.email,
@@ -85,8 +111,30 @@ export const loginWithGoogle = async () => {
                 name: user.displayName || 'Nurse',
                 photoURL: user.photoURL,
                 createdAt: new Date().toISOString(),
+                lastLogin: serverTimestamp(),
+                referralCount: 0,
+                referredBy: referrerUid || null,
                 role: 'nurse' // data model default
             });
+
+            // Increment referrer's count
+            if (referrerUid && referrerUid !== user.uid) {
+                try {
+                    const referrerRef = doc(db, 'users', referrerUid);
+                    const referrerSnap = await getDoc(referrerRef);
+                    if (referrerSnap.exists()) {
+                        await setDoc(referrerRef, { referralCount: increment(1) }, { merge: true });
+                    }
+                } catch (e) {
+                    console.warn('Referral increment failed:', e.message);
+                }
+                sessionStorage.removeItem('referrer_uid');
+            }
+        } else {
+            // Track lastLogin for admin analytics
+            try {
+                await setDoc(userRef, { lastLogin: serverTimestamp() }, { merge: true });
+            } catch (e) { /* non-critical */ }
         }
 
         return { success: true, user };

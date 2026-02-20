@@ -1,30 +1,30 @@
+import axios from 'axios';
+import { db } from '../lib/firebase';
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+
 const RSS2JSON_BASE = 'https://api.rss2json.com/v1/api.json?rss_url=';
 
-// Source Configurations
+// Source Configurations — reliable, actively maintained feeds
 const SOURCES = {
-    education: [
-        'https://www.nursingtimes.net/feed/', // Nursing Times
-        'https://bg.nursingcenter.com/Specific-Feed/Aggregated-Feed/All-Articles', // Nursing Center
-        'http://feeds.feedburner.com/Healthline-Health-News', // Healthline
+    who: [
+        'https://www.who.int/rss-feeds/news-english.xml', // WHO News
     ],
-    news: [
-        'https://www.dailymirror.lk/RSS_Feeds/breaking-news', // Daily Mirror SL
+    health: [
         'http://feeds.bbci.co.uk/news/health/rss.xml', // BBC Health
     ],
-    migration: [
-        'https://www.nmc.org.uk/rss/', // NMC UK
-        'https://www.ahpra.gov.au/RSS/News.aspx', // AHPRA (Generic Example, might need adjustment)
+    youtube: [
+        // RegisteredNurseRN YouTube channel RSS
+        'https://www.youtube.com/feeds/videos.xml?channel_id=UCqb2GJsCYBF3WK7kFINaSfA',
     ]
 };
 
-// Fallback Google News queries if RSS fails
-const GOOGLE_FALLBACKS = {
-    education: 'Nursing+Education+OR+Clinical+Practice+Updates',
-    news: 'Sri+Lanka+Health+News+OR+Global+Nursing+News',
-    migration: 'Nurse+Migration+UK+Australia+Canada'
-};
+const getImage = (item, isYouTube = false) => {
+    if (isYouTube) {
+        // YouTube thumbnails from video ID
+        const videoId = item.guid?.match(/yt:video:(.+)/)?.[1] || item.link?.split('v=')[1];
+        if (videoId) return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+    }
 
-const getImage = (item) => {
     // Try to find image in enclosure or content
     if (item.enclosure?.link) return item.enclosure.link;
     if (item.thumbnail) return item.thumbnail;
@@ -33,13 +33,39 @@ const getImage = (item) => {
     const imgMatch = item.description?.match(/<img[^>]+src="([^">]+)"/);
     if (imgMatch) return imgMatch[1];
 
-    // Fallback Unsplash - distinct keywords based on title
-    const keywords = item.title.includes('Sri Lanka') ? 'sri lanka,hospital' : 'nurse,medical,doctor';
-    return `https://source.unsplash.com/800x600/?${keywords}&sig=${Math.random()}`; // Sig to avoid dupes
+    // Fallback placeholder
+    return `https://placehold.co/800x400/1e293b/94a3b8?text=${encodeURIComponent(item.title?.substring(0, 30) || 'News')}`;
+};
+
+// ─── Fetch Admin-posted news from Firestore ───────────────────
+const fetchAdminNews = async () => {
+    try {
+        const q = query(collection(db, 'admin_news'), orderBy('createdAt', 'desc'), limit(20));
+        const snap = await getDocs(q);
+        const items = [];
+        snap.forEach(docSnap => {
+            const data = docSnap.data();
+            items.push({
+                title: data.title || '',
+                link: data.link || '',
+                pubDate: data.pubDate || data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+                source: 'Admin',
+                category: data.category || 'Admin Update',
+                image: data.imageUrl || `https://placehold.co/800x400/7c3aed/ffffff?text=${encodeURIComponent(data.title?.substring(0, 25) || 'Update')}`,
+                isVideo: false,
+                isAdmin: true,
+                contentSnippet: data.content?.substring(0, 150) + '...'
+            });
+        });
+        return items;
+    } catch (err) {
+        console.warn('Failed to fetch admin news from Firestore', err.message);
+        return [];
+    }
 };
 
 export const fetchNews = async () => {
-    // 1. Check Cache (3 Hour Policy)
+    // 1. Check Cache (1 Hour Policy)
     const CACHE_KEY = 'smart_feed_cache';
     const CACHE_TIME_KEY = 'smart_feed_time';
     const cachedData = localStorage.getItem(CACHE_KEY);
@@ -47,17 +73,17 @@ export const fetchNews = async () => {
 
     if (cachedData && cachedTime) {
         const age = Date.now() - parseInt(cachedTime, 10);
-        // 3 Hours = 3 * 60 * 60 * 1000
-        if (age < 3 * 60 * 60 * 1000) {
-            console.log(`Using cached smart feed (Age: ${Math.round(age / 1000 / 60)} mins)`);
+        // 1 Hour = 60 * 60 * 1000
+        if (age < 60 * 60 * 1000) {
+
             return JSON.parse(cachedData);
         }
     }
 
     let allItems = [];
 
-    // Helper to fetch valid RSS via proxy
-    const fetchSource = async (url, category) => {
+    // Helper to fetch valid RSS via rss2json proxy
+    const fetchSource = async (url, category, isYouTube = false) => {
         try {
             const res = await axios.get(`${RSS2JSON_BASE}${encodeURIComponent(url)}`);
             if (res.data.status === 'ok') {
@@ -65,24 +91,26 @@ export const fetchNews = async () => {
                     title: item.title,
                     link: item.link,
                     pubDate: item.pubDate,
-                    source: res.data.feed.title || "News",
+                    source: res.data.feed?.title || category,
                     category: category,
-                    image: getImage(item),
-                    contentSnippet: item.description?.replace(/<[^>]*>?/gm, "").substring(0, 120) + "..."
+                    image: getImage(item, isYouTube),
+                    isVideo: isYouTube,
+                    contentSnippet: item.description?.replace(/<[^>]*>?/gm, "").substring(0, 150) + "..."
                 }));
             }
         } catch (e) {
-            console.warn(`Failed to fetch ${url}`, e);
+            console.warn(`Failed to fetch ${url}`, e.message);
         }
         return [];
     };
 
     try {
-        // Parallel Fetching
+        // Parallel Fetching — RSS + Admin Firestore news
         const promises = [
-            ...SOURCES.education.map(url => fetchSource(url, 'Education')),
-            ...SOURCES.news.map(url => fetchSource(url, 'News')),
-            ...SOURCES.migration.map(url => fetchSource(url, 'Migration'))
+            ...SOURCES.who.map(url => fetchSource(url, 'WHO News')),
+            ...SOURCES.health.map(url => fetchSource(url, 'Health')),
+            ...SOURCES.youtube.map(url => fetchSource(url, 'Video', true)),
+            fetchAdminNews()  // ← Admin-posted news from Firestore
         ];
 
         const results = await Promise.all(promises);
@@ -95,6 +123,9 @@ export const fetchNews = async () => {
         allItems = allItems.filter((item, index, self) =>
             index === self.findIndex((t) => (t.title === item.title))
         );
+
+        // Limit to 30 items max
+        allItems = allItems.slice(0, 30);
 
         // Save to Cache
         if (allItems.length > 0) {
@@ -110,3 +141,4 @@ export const fetchNews = async () => {
         return [];
     }
 };
+

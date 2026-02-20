@@ -19,21 +19,11 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         // Subscribe to Firebase Auth State Changes
+        // Subscribe to Firebase Auth State Changes
         const unsubscribe = authService.onAuthStateChange(async (firebaseUser) => {
             if (firebaseUser) {
                 // User is signed in with Firebase
                 setUser(firebaseUser);
-
-                // Sync with Backend
-                try {
-                    console.log("Syncing user with backend...");
-                    await authService.syncUserWithBackend(firebaseUser);
-                    console.log("User synced with backend");
-                } catch (err) {
-                    console.error("Failed to sync user with backend:", err);
-                    // Optional: Logout if sync fails? For now, keep logged in but warn.
-                }
-
             } else {
                 // User is signed out
                 setUser(null);

@@ -19,9 +19,11 @@ const NextShiftCard = () => {
     for (let i = 0; i < 7; i++) {
         const checkDate = addDays(today, i);
         const dateStr = format(checkDate, 'yyyy-MM-dd');
-        const code = shifts[dateStr];
+        const rawShift = shifts[dateStr];
+        const code = typeof rawShift === 'object' ? rawShift?.shifts?.[0] : rawShift;
 
-        if (code && code !== 'OFF') {
+        // Skip if undefined, null, or explicit 'OFF', or NOT a string
+        if (code && typeof code === 'string' && code !== 'OFF') {
             shiftCode = code;
             displayDate = checkDate;
             isToday = i === 0;

@@ -12,6 +12,13 @@ const Home = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        // Capture referral code from URL
+        const params = new URLSearchParams(window.location.search);
+        const ref = params.get('ref');
+        if (ref) {
+            sessionStorage.setItem('referrer_uid', ref);
+        }
+
         if (user) {
             navigate('/roster');
         }

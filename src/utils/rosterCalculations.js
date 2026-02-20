@@ -14,6 +14,7 @@ export const SHIFT_TIMES = {
     SD: { start: "SD", end: "" },
     CL: { start: "CL", end: "" },
     PH: { start: "PH", end: "" },
+    PH_LEAVE: { start: "PH_LEAVE", end: "" },
     DO: { start: "DO", end: "" },
     VL: { start: "VL", end: "" }
 };
@@ -21,7 +22,7 @@ export const SHIFT_TIMES = {
 // Helper to parse "07:00H" or "19:00" strings to hours
 export function calculateHours(startStr, endStr) {
     if (!startStr || !endStr) return 0;
-    if (startStr === "SD" || startStr === "CL" || startStr === "PH" || startStr === "DO" || startStr === "VL") return 0;
+    if (startStr === "SD" || startStr === "CL" || startStr === "PH" || startStr === "PH_LEAVE" || startStr === "DO" || startStr === "VL") return 0;
 
     // Parse time strings like "07:00H" or "19:00"
     const parseTime = (timeStr) => {
@@ -52,7 +53,7 @@ export function calculateShiftDuration(code, customEndTimes = {}, customStartTim
     if (customEndTimes[code]) endStr = customEndTimes[code];
 
     // Special cases
-    if (code === 'OFF' || code === 'PH' || code === 'SD' || code === 'DO' || code === 'CL' || code === 'VL') {
+    if (code === 'OFF' || code === 'PH' || code === 'PH_LEAVE' || code === 'SD' || code === 'DO' || code === 'CL' || code === 'VL') {
         return { start: startStr, end: '-', duration: 0 };
     }
 
@@ -74,7 +75,12 @@ export const calculateRosterStats = (shifts, currentMonthDate) => {
     // Check day before start
     const dayBeforeStart = addDays(startDate, -1);
     const prevKey = format(dayBeforeStart, 'yyyy-MM-dd');
-    if (shifts[prevKey]?.shifts?.includes('DN')) {
+    let prevData = shifts[prevKey];
+
+    // Normalize prevData
+    if (typeof prevData === 'string') prevData = { shifts: [prevData], type: null };
+
+    if (prevData?.shifts && Array.isArray(prevData.shifts) && prevData.shifts.includes('DN')) {
         prevDayWasNight = true;
     }
 
@@ -91,7 +97,14 @@ export const calculateRosterStats = (shifts, currentMonthDate) => {
             if (current > endDate) break; // Should not happen if chunks are aligned but safety
 
             const dateKey = format(current, 'yyyy-MM-dd');
-            const shiftData = shifts[dateKey] || { shifts: [], type: null };
+            let shiftData = shifts[dateKey];
+
+            // Normalize shiftData
+            if (typeof shiftData === 'string') {
+                shiftData = { shifts: [shiftData], type: null };
+            } else if (!shiftData) {
+                shiftData = { shifts: [], type: null };
+            }
 
             const dayResult = {
                 date: new Date(current),
@@ -109,10 +122,11 @@ export const calculateRosterStats = (shifts, currentMonthDate) => {
 
             // Determine if today is Sleeping Day (SD)
             const isSleepingDay = prevDayWasNight;
-            const currentDayIsNight = shiftData.shifts && shiftData.shifts.includes('DN');
+            const currentShifts = Array.isArray(shiftData.shifts) ? shiftData.shifts : [];
+            const currentDayIsNight = currentShifts.includes('DN');
             dayResult.isSD = isSleepingDay;
 
-            let activeShifts = [...(shiftData.shifts || [])];
+            let activeShifts = [...currentShifts];
 
             // Apply SD Rule: Regular shifts become OT
             if (isSleepingDay) {
@@ -126,25 +140,26 @@ export const calculateRosterStats = (shifts, currentMonthDate) => {
                 // If it's an SD, we want to label it 'SD' in Duty In column if there is no regular duty.
                 // Even if there is OT (e.g. OTN), the Duty column should say SD.
                 const hasDutyShift = activeShifts.some(s => ['M', 'E', 'DN'].includes(s)); // Note M/E/DN already mapped to OT variants above if simply isSleepingDay? 
-                // Wait, if moved to OTM/OTE/OTN, they are no longer M/E/DN in activeShifts array.
-                // But the MAPPING happens above.
-                // If I had 'M', it became 'OTM'. 
-                // So if activeShifts has OTM, it WAS a duty shift.
-                // BUT, if the user explicitly wants "SD" displayed?
-                // If I work OTM (converted from M), do I show "SD" or "07:00"?
-                // Standard roster practice: If I work, I show Time.
-                // If I DON'T work Duty, I show SD.
-                // The issue: "only thing to be added is SD name only".
-                // If I work OTN on SD. activeShifts = ['OTN'].
-                // Original code: if (length === 0 ...). length is 1. So 'SD' not shown.
-                // Fix: Show 'SD' if NOT mapped from Duty?
-                // OTN is pure OT. It wasn't mapped from DN (DN -> OTN yes, but user entered OTN directly).
-                // Let's check original shifts?
+                // Since M/E/DN are already mapped to OTM/OTE/OTN, hasDutyShift will be false here for those.
+                // So checking activeShifts for M/E/DN checks if any *new* unmapped duty appeared (unlikely).
 
+                // We check original shifts to see if user *intended* to work.
                 const originalShifts = shiftData.shifts || [];
                 const hasOriginalDuty = originalShifts.some(s => ['M', 'E', 'DN'].includes(s));
 
-                if (!hasOriginalDuty && !['CL', 'VL', 'PH', 'DO'].includes(shiftData.type)) {
+                // FIX: User wants 'SD' to appear even if they worked OT (converted from Duty).
+                // If the Duty column is otherwise going to be empty (because duty moved to OT column),
+                // we should fill it with 'SD'.
+                // If hasOriginalDuty is true, activeShifts has OTM/OTE. DutyIn is not set by Process Shifts block.
+                // So we CAN set 'SD' here safely.
+
+                if (!['CL', 'VL', 'PH', 'DO'].includes(shiftData.type)) {
+                    // Check if 'Process Shifts' will overwrite DutyIn?
+                    // Process Shifts overwrites if `dutyShiftCode` found.
+                    // `dutyShiftCode` looks for M/E/DN in activeShifts.
+                    // Since we mapped M->OTM, `dutyShiftCode` will be undefined.
+                    // So Process Shifts will NOT overwrite DutyIn.
+                    // Thus, setting it to 'SD' here is safe and correct.
                     dayResult.dutyIn = 'SD';
                 }
             }
@@ -207,7 +222,13 @@ export const calculateRosterStats = (shifts, currentMonthDate) => {
                 // But PDF logic says: `weekTotalDuty += 6`.
                 // And `weekTotalHours += weekTotalDuty`.
                 // So YES, leaves count towards "Total Hours" (Box 3) and thus "Payable" (Box 4) if threshold met.
+            } else if (shiftData.type === 'PH_LEAVE') {
+                // PH (Leave): counts as 6H normal duty
+                dayResult.dutyIn = "PH_LEAVE";
+                dayResult.dutyHrs = "6H";
+                weekTotalDuty += 6;
             } else if (shiftData.type === 'PH') {
+                // Public Holiday: label only, no hour calculation
                 dayResult.dutyIn = "PH";
             } else if (shiftData.type === 'DO') {
                 dayResult.dutyIn = "DO";

@@ -13,6 +13,10 @@ import {
     CalendarDays
 } from 'lucide-react';
 import { cn } from '../../../lib/utils'; // Ensure cn utility is available or remove if not
+import AnnouncementBanner from '../../../components/ui/AnnouncementBanner';
+import { useEffect } from 'react';
+import { requestNotificationPermission, checkAndSendDailyReminder } from '../../../services/reminderService';
+
 
 const DashboardPage = () => {
     const { user } = useAuth();
@@ -24,7 +28,7 @@ const DashboardPage = () => {
             icon: Calculator,
             color: 'text-blue-400',
             bg: 'bg-blue-500/10',
-            link: '/tools',
+            link: '/roster/tools',
             desc: 'IV & BMI Calc'
         },
         {
@@ -55,6 +59,20 @@ const DashboardPage = () => {
 
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
+    useEffect(() => {
+        // Request Permission
+        const initNotifications = async () => {
+            const granted = await requestNotificationPermission();
+            if (granted) {
+                checkAndSendDailyReminder(user);
+            }
+        };
+
+        if (user) {
+            initNotifications();
+        }
+    }, [user]);
+
     return (
         <div className="space-y-6 pb-24 animate-in fade-in duration-500">
             <Helmet>
@@ -72,6 +90,11 @@ const DashboardPage = () => {
                     {/* <p className="text-sm font-semibold">Welcome, {user?.displayName?.split(' ')[0] || 'Nurse'}</p> */}
                 </div>
             </div>
+
+
+
+            {/* In-App Announcement Banner */}
+            <AnnouncementBanner />
 
             {/* Next Shift Summary */}
             <NextShiftCard />
