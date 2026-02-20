@@ -367,10 +367,30 @@ const AdminDashboard = () => {
 
                     {/* Manage News Section */}
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle className="flex items-center gap-2 text-foreground">
                                 <FileText className="w-5 h-5" /> Manage Content ({adminNews.length})
                             </CardTitle>
+                            <Button variant="outline" size="sm" onClick={async () => {
+                                const toastId = toast.loading('Refreshing Auto-Content...');
+                                try {
+                                    // Call backend to trigger fetch
+                                    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                                    const res = await fetch(`${API_BASE}/api/news/refresh`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' }
+                                    });
+                                    if (res.ok) {
+                                        toast.success('Content Refreshed!', { id: toastId });
+                                    } else {
+                                        toast.error('Failed to trigger update', { id: toastId });
+                                    }
+                                } catch (e) {
+                                    toast.error('Network Error', { id: toastId });
+                                }
+                            }}>
+                                <Clock className="w-4 h-4 mr-2" /> Refresh Feed
+                            </Button>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-3 max-h-[500px] overflow-y-auto">

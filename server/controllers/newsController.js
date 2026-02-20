@@ -74,6 +74,28 @@ const getNews = async (req, res) => {
     }
 };
 
+const { fetchYouTubeUpdates } = require('../services/youtubeService');
+const { fetchWHOUpdates } = require('../services/whoService');
+
+const refreshContent = async (req, res) => {
+    try {
+        console.log('Manual content refresh triggered by Admin');
+        const videos = await fetchYouTubeUpdates();
+        const articles = await fetchWHOUpdates();
+        res.json({
+            message: 'Content refresh complete',
+            stats: {
+                newVideos: videos,
+                newArticles: articles
+            }
+        });
+    } catch (error) {
+        console.error('Manual refresh failed:', error);
+        res.status(500).json({ error: 'Failed to refresh content' });
+    }
+};
+
 module.exports = {
-    getNews
+    getNews,
+    refreshContent
 };

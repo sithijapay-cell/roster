@@ -7,4 +7,10 @@ const { getNews } = require('../controllers/newsController');
 // @access  Public
 router.get('/', getNews);
 
+// @route   POST /api/news/refresh
+// @desc    Trigger Manual YouTube/WHO Fetch
+// @access  Private (Admin) - Protected in frontend by AuthGuard, backend could use middleware
+const { refreshContent } = require('../controllers/newsController');
+router.post('/refresh', refreshContent);
+
 module.exports = router;
